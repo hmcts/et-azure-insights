@@ -27,5 +27,10 @@ module Dummy
     # Application configuration can go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded after loading
     # the framework and any gems in your application.
+
+    config.azure_insights.enable = true
+    config.azure_insights.key = 'dummyazureinsightskey'
+    config.azure_insights.role_name = 'dummyrolename'
+    config.azure_insights.role_instance = 'dummyroleinstance'
   end
 end

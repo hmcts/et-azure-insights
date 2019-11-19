@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'application_insights'
 require 'et_azure_insights/engine'
 require 'et_azure_insights/config'
 require 'et_azure_insights/rack'
@@ -11,7 +12,6 @@ require 'et_azure_insights/rack'
 # At the moment (hence its name) it is only for use with the employment tribunals application
 # but once this has been done it may become more generic and be usable for many apps including outside
 # of HMCTS - but one step at a time.
-#
 module EtAzureInsights
   def self.config
     EtAzureInsights::Config.config

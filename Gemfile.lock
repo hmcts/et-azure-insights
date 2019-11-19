@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     et_azure_insights (0.1.0)
-      rails (~> 6.0.1)
+      application_insights (~> 0.5.6)
 
 GEM
   remote: https://rubygems.org/
@@ -62,6 +62,7 @@ GEM
       minitest (~> 5.1)
       tzinfo (~> 1.1)
       zeitwerk (~> 2.2)
+    application_insights (0.5.6)
     ast (2.4.0)
     builder (3.2.3)
     concurrent-ruby (1.1.5)
@@ -172,6 +173,7 @@ PLATFORMS
 DEPENDENCIES
   et_azure_insights!
   pg
+  rails (~> 6.0.1)
   rspec-rails (~> 3.9)
   rubocop (~> 0.76.0)
   yard (~> 0.9.20)

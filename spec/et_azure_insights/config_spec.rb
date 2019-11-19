@@ -3,6 +3,13 @@
 require 'rails_helper'
 require 'et_azure_insights/config'
 RSpec.describe EtAzureInsights::Config do
+  around do |example|
+    old = EtAzureInsights::Config.config.as_json
+    example.run
+    old.each_pair do |key, value|
+      EtAzureInsights::Config.config.send("#{key}=", value)
+    end
+  end
   context 'class methods' do
     let(:subject) { described_class }
     describe '#configure' do
