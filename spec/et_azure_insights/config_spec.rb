@@ -67,5 +67,19 @@ RSpec.describe EtAzureInsights::Config do
         expect(subject.insights_role_instance).to eq 'yetanotherrandomstring'
       end
     end
+
+    describe 'buffer_size=' do
+      it 'writes the value as an integer' do
+        subject.buffer_size = 19
+        expect(subject.buffer_size).to eq 19
+      end
+    end
+
+    describe 'send_interval=' do
+      it 'writes the value as a float' do
+        subject.buffer_size = 21.5
+        expect(subject.buffer_size).to eq 21.5
+      end
+    end
   end
 end

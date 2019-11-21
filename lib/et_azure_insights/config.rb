@@ -20,6 +20,7 @@ module EtAzureInsights
   class Config
     include Singleton
     attr_accessor :enable, :insights_key, :insights_role_name, :insights_role_instance
+    attr_accessor :buffer_size, :send_interval
 
     # Yields and/or returns the single config instance to allow setting of values
     # @yield [EtAzureInsights::Config]

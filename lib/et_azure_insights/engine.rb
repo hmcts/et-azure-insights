@@ -15,6 +15,27 @@ module EtAzureInsights
           c.insights_key = ai.key
           c.insights_role_name = ai.role_name
           c.insights_role_instance = ai.role_instance
+          c.buffer_size = ai.buffer_size
+          c.send_interval = ai.send_interval
+        end
+      end
+    end
+
+    initializer :add_sidekiq_client_middleware do
+      ::Sidekiq.configure_client do |config|
+        config.client_middleware do |chain|
+          chain.add EtAzureInsights::Sidekiq::TrackClientJob
+        end
+      end
+    end
+
+    initializer :add_sidekiq_server_middleware do
+      ::Sidekiq.configure_server do |config|
+        config.client_middleware do |chain|
+          chain.add EtAzureInsights::Sidekiq::TrackClientJob
+        end
+        config.server_middleware do |chain|
+          chain.add EtAzureInsights::Sidekiq::TrackServerJob
         end
       end
     end

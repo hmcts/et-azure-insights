@@ -32,5 +32,7 @@ module Dummy
     config.azure_insights.key = 'dummyazureinsightskey'
     config.azure_insights.role_name = 'dummyrolename'
     config.azure_insights.role_instance = 'dummyroleinstance'
+    config.azure_insights.buffer_size = 1
+    config.azure_insights.send_interval = 0.1
   end
 end

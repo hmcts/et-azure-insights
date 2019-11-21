@@ -26,5 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rails', '~> 6.0.1'
   spec.add_development_dependency 'rspec-rails', '~> 3.9'
   spec.add_development_dependency 'rubocop', '~> 0.76.0'
+  spec.add_development_dependency 'sidekiq', '~> 6.0', '>= 6.0.3'
+  spec.add_development_dependency 'webmock', '~> 3.7', '>= 3.7.6'
   spec.add_development_dependency 'yard', '~> 0.9.20'
 end

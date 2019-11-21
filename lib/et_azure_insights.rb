@@ -4,6 +4,8 @@ require 'application_insights'
 require 'et_azure_insights/engine'
 require 'et_azure_insights/config'
 require 'et_azure_insights/rack'
+require 'et_azure_insights/sidekiq'
+require 'et_azure_insights/request_stack'
 
 # ET Azure Insights
 #

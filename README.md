@@ -20,8 +20,23 @@ gem 'et_azure_insights'
 
 ### Rails
 
-To configure in a rails application, simply add a file called 'et_azure_insights.rb' to your config/initializers folder
-and it should contain :-
+To configure in a rails application, add the following to your config/application.rb or config/environments/*.rb
+
+```ruby
+
+    config.azure_insights.enable = true
+    config.azure_insights.key = 'yourinsightskey'
+    config.azure_insights.role_name = 'microservice-role-name'
+    config.azure_insights.role_instance = ENV.fetch('HOSTNAME', 'default-instance-name')
+    config.azure_insights.buffer_size = 500
+    config.azure_insights.send_interval = 60
+```
+
+### Non Rails
+
+This gem can be used in a non rails environment, but you will need to hook things in yourself.
+
+To configure, do :-
 
 ```ruby
 EtAzureInsights.configure do |c|

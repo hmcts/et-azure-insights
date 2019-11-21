@@ -14,6 +14,14 @@ RSpec.describe 'EtAzureInsights rails integration' do
     expect(EtAzureInsights.config).to have_attributes insights_key: insights_config.key,
                                                       enable: insights_config.enable,
                                                       insights_role_name: insights_config.role_name,
-                                                      insights_role_instance: insights_config.role_instance
+                                                      insights_role_instance: insights_config.role_instance,
+                                                      buffer_size: 1,
+                                                      send_interval: 0.1
+  end
+
+  it 'hooks into sidekiq client side middleware' do
+    middleware = Sidekiq.client_middleware
+
+    expect(middleware).to include an_object_having_attributes(klass: EtAzureInsights::Sidekiq::TrackClientJob)
   end
 end
