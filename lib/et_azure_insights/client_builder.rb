@@ -37,7 +37,7 @@ module EtAzureInsights
     end
 
     def configure_role_name
-      client.context.cloud.role_name = config.insights_role_name unless config.insights_role_name.nil?
+      client.context.cloud.role = config.insights_role_name unless config.insights_role_name.nil?
     end
   end
 end

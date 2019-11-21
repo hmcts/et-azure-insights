@@ -63,9 +63,7 @@ RSpec.describe EtAzureInsights::Sidekiq::TrackServerJob do
       middleware.call(example_worker, example_job, example_queue) {}
       sleep 0.01
 
-      base_data_matcher = a_hash_including 'startTime' => instance_of(String),
-                                           'duration' => instance_of(String),
-                                           'responseCode' => 200,
+      base_data_matcher = a_hash_including 'responseCode' => 200,
                                            'success' => true
       data_matcher = a_hash_including('baseData' => base_data_matcher, 'baseType' => 'RequestData')
       expect(call_collector.flatten.map { |call| call.dig('data') }).to include data_matcher

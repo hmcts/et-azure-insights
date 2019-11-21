@@ -1,8 +1,15 @@
+GIT
+  remote: https://github.com/microsoft/ApplicationInsights-Ruby.git
+  revision: 5db6b4ad65262d23f26b678143a4a1fd7939e5c2
+  ref: 5db6b4
+  specs:
+    application_insights (0.5.7)
+
 PATH
   remote: .
   specs:
     et_azure_insights (0.1.0)
-      application_insights (~> 0.5.6)
+      application_insights (~> 0.5.7)
 
 GEM
   remote: https://rubygems.org/
@@ -64,7 +71,6 @@ GEM
       zeitwerk (~> 2.2)
     addressable (2.7.0)
       public_suffix (>= 2.0.2, < 5.0)
-    application_insights (0.5.6)
     ast (2.4.0)
     builder (3.2.3)
     concurrent-ruby (1.1.5)
@@ -191,6 +197,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  application_insights!
   et_azure_insights!
   pg
   rails (~> 6.0.1)

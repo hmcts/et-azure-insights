@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata['yard.run'] = 'yri' # use "yard" to build full HTML docs.
 
-  spec.add_dependency 'application_insights', '~> 0.5.6'
+  spec.add_dependency 'application_insights', '~> 0.5.7' # Note, 0.5.7 is not released at this point so the Gemfile of the application
 
   spec.add_development_dependency 'pg'
   spec.add_development_dependency 'rails', '~> 6.0.1'
