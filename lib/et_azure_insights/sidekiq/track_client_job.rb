@@ -6,16 +6,9 @@ module EtAzureInsights
     # This allows the request id to propogate (via the job data) to the sidekiq server
     # and also an event is sent to azure insights stating that a sidekiq job has been queued.
     class TrackClientJob
-      def initialize(config: EtAzureInsights.config)
+      def initialize(config: EtAzureInsights.config, client_builder: ClientBuilder.new(config: config))
         self.config = config
-
-        @sender = ApplicationInsights::Channel::AsynchronousSender.new
-        @sender.send_interval = config.send_interval
-        queue = ApplicationInsights::Channel::AsynchronousQueue.new @sender
-        queue.max_queue_length = config.buffer_size
-        @channel = ApplicationInsights::Channel::TelemetryChannel.new nil, queue
-
-        self.client = ApplicationInsights::TelemetryClient.new config.insights_key, @channel
+        self.client = client_builder.build
       end
 
       def call(_worker_class, job, _queue, _redis_pool)

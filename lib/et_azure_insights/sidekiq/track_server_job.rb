@@ -7,18 +7,10 @@ module EtAzureInsights
     # This middleware will inform azure insights of the sidekiq job being processed.  It will appear as a 'request'
     # for now - as azure insights does not support background jobs or any form of external process yet.
     class TrackServerJob
-      def initialize(config: EtAzureInsights.config, request_stack: EtAzureInsights::RequestStack)
+      def initialize(config: EtAzureInsights.config, request_stack: EtAzureInsights::RequestStack, client_builder: ClientBuilder.new(config: config))
         self.config = config
         self.request_stack = request_stack
-
-        @sender = ApplicationInsights::Channel::AsynchronousSender.new
-        @sender.send_interval = config.send_interval
-        queue = ApplicationInsights::Channel::AsynchronousQueue.new @sender
-        queue.max_queue_length = config.buffer_size
-        @channel = ApplicationInsights::Channel::TelemetryChannel.new nil, queue
-
-        self.client = ApplicationInsights::TelemetryClient.new config.insights_key, @channel
-        configure_context
+        self.client = client_builder.build
       end
 
       def call(_worker, job, _queue, &block)
@@ -68,19 +60,6 @@ module EtAzureInsights
 
         client.track_exception value, handled_at: 'Unhandled'
         raise value
-      end
-
-      def configure_context
-        configure_insights_role
-        configure_insights_role_instance
-      end
-
-      def configure_insights_role_instance
-        client.context.cloud.role_instance = config.insights_role_instance unless config.insights_role_instance.nil?
-      end
-
-      def configure_insights_role
-        client.context.cloud.role_name = config.insights_role_name unless config.insights_role_name.nil?
       end
 
       attr_accessor :config, :client, :request_stack

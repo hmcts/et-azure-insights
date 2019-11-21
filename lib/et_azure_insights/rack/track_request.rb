@@ -13,10 +13,6 @@ module EtAzureInsights
         super(app, config.insights_key, config.buffer_size, config.send_interval)
       end
 
-      def self.current_request_id
-        Thread.current[:azure_insights_rack_request_id]
-      end
-
       def call(env)
         with_request_id env do
           start = Time.now

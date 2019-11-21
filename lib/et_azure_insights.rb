@@ -6,6 +6,7 @@ require 'et_azure_insights/config'
 require 'et_azure_insights/rack'
 require 'et_azure_insights/sidekiq'
 require 'et_azure_insights/request_stack'
+require 'et_azure_insights/client_builder'
 
 # ET Azure Insights
 #
