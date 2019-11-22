@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 require 'application_insights'
+require 'et_azure_insights/feature_detector'
 require 'et_azure_insights/engine'
 require 'et_azure_insights/config'
-require 'et_azure_insights/rack'
-require 'et_azure_insights/sidekiq'
+require 'et_azure_insights/instrumentors'
 require 'et_azure_insights/request_stack'
+require 'et_azure_insights/client'
 require 'et_azure_insights/client_builder'
 
 # ET Azure Insights
@@ -22,5 +23,15 @@ module EtAzureInsights
 
   def self.configure(&block)
     EtAzureInsights::Config.configure(&block)
+  end
+
+  def self.global_insights_channel
+    Thread.current[:azure_insights_global_channel] ||= begin
+      sender = ApplicationInsights::Channel::AsynchronousSender.new
+      sender.send_interval = config.send_interval
+      queue = ApplicationInsights::Channel::AsynchronousQueue.new sender
+      queue.max_queue_length = config.buffer_size
+      ApplicationInsights::Channel::TelemetryChannel.new nil, queue
+    end
   end
 end

@@ -11,9 +11,7 @@ module EtAzureInsights
     end
 
     def build
-      self.client = ApplicationInsights::TelemetryClient.new config.insights_key, channel
-      configure_role_name
-      configure_role_instance
+      self.client = Client.new(config: config)
       yield client if block_given?
       client
     end
@@ -21,23 +19,5 @@ module EtAzureInsights
     private
 
     attr_accessor :client, :config
-
-    def channel
-      Thread.current[:azure_insights_global_channel] ||= begin
-        sender = ApplicationInsights::Channel::AsynchronousSender.new
-        sender.send_interval = config.send_interval
-        queue = ApplicationInsights::Channel::AsynchronousQueue.new sender
-        queue.max_queue_length = config.buffer_size
-        ApplicationInsights::Channel::TelemetryChannel.new nil, queue
-      end
-    end
-
-    def configure_role_instance
-      client.context.cloud.role_instance = config.insights_role_instance unless config.insights_role_instance.nil?
-    end
-
-    def configure_role_name
-      client.context.cloud.role = config.insights_role_name unless config.insights_role_name.nil?
-    end
   end
 end

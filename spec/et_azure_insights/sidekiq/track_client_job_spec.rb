@@ -65,7 +65,7 @@ RSpec.describe EtAzureInsights::Sidekiq::TrackClientJob do
       middleware.call(example_worker_class, example_job, example_queue, example_redis_pool) do
         block_called = true
       end
-      sleep 0.01
+      sleep 0.1
       properties_matcher = a_hash_including('jid' => '63ab2d8dc8f4f714b0b5cdec',
                                             'start_time' => instance_of(String))
       base_data_matcher = a_hash_including('name' => 'sidekiq_job_queued',

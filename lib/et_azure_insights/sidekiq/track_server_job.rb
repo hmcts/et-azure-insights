@@ -33,7 +33,8 @@ module EtAzureInsights
 
       def assign_parent_request_id(job)
         parent_request_id = job['azure_insights_parent_request_id']
-        client.context.operation.parent_id = parent_request_id unless parent_request_id.nil?
+        # @TODO Work out better interface to be able to customize context
+        client.send(:context).operation.parent_id = parent_request_id unless parent_request_id.nil?
       end
 
       def send_request(job, retval, start, stop)

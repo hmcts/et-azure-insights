@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require 'spec_helper'
+require 'et_azure_insights/sidekiq/track_server_job'
 RSpec.describe EtAzureInsights::Sidekiq::TrackServerJob do
   let(:example_config) do
     instance_double EtAzureInsights::Config,
@@ -61,7 +62,7 @@ RSpec.describe EtAzureInsights::Sidekiq::TrackServerJob do
 
     it 'sends request data to show the call was made' do
       middleware.call(example_worker, example_job, example_queue) {}
-      sleep 0.01
+      sleep 0.1
 
       base_data_matcher = a_hash_including 'responseCode' => 200,
                                            'success' => true

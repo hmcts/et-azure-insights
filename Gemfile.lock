@@ -8,7 +8,7 @@ GIT
 PATH
   remote: .
   specs:
-    et_azure_insights (0.1.0)
+    et_azure_insights (0.1.1)
       application_insights (~> 0.5.7)
 
 GEM
@@ -142,6 +142,7 @@ GEM
     redis (4.1.3)
     rspec-core (3.9.0)
       rspec-support (~> 3.9.0)
+    rspec-eventually (0.2.2)
     rspec-expectations (3.9.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.9.0)
@@ -201,6 +202,7 @@ DEPENDENCIES
   et_azure_insights!
   pg
   rails (~> 6.0.1)
+  rspec-eventually (~> 0.2.2)
   rspec-rails (~> 3.9)
   rubocop (~> 0.76.0)
   sidekiq (~> 6.0, >= 6.0.3)

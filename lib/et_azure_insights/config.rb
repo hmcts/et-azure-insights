@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'singleton'
 module EtAzureInsights
   # Configuration instance for Et Azure Insights
   # Note that the configure and config methods are aliased in the top level EtAzureInsights module also for convenience

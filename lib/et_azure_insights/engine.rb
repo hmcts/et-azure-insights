@@ -21,23 +21,8 @@ module EtAzureInsights
       end
     end
 
-    initializer :add_sidekiq_client_middleware do
-      ::Sidekiq.configure_client do |config|
-        config.client_middleware do |chain|
-          chain.add EtAzureInsights::Sidekiq::TrackClientJob
-        end
-      end
-    end
-
-    initializer :add_sidekiq_server_middleware do
-      ::Sidekiq.configure_server do |config|
-        config.client_middleware do |chain|
-          chain.add EtAzureInsights::Sidekiq::TrackClientJob
-        end
-        config.server_middleware do |chain|
-          chain.add EtAzureInsights::Sidekiq::TrackServerJob
-        end
-      end
+    initializer :install_azure_insights_features do
+      FeatureDetector.install_all!
     end
   end
 end
