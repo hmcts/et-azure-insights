@@ -17,11 +17,13 @@ module EtAzureInsights
   #      c.insights_key = insights_key
   #      c.insights_role_name = ENV.fetch('AZURE_APP_INSIGHTS_ROLE_NAME', 'et-api')
   #      c.insights_role_instance = ENV.fetch('HOSTNAME', nil)
+  #      c.disabled_features << :excon # (An example of disabling an instrumentor if you have Excon installed but for some reason dont want it instrumented)
   #    end
   class Config
     include Singleton
     attr_accessor :enable, :insights_key, :insights_role_name, :insights_role_instance
     attr_accessor :buffer_size, :send_interval
+    attr_accessor :disabled_features
 
     # Yields and/or returns the single config instance to allow setting of values
     # @yield [EtAzureInsights::Config]
@@ -35,6 +37,18 @@ module EtAzureInsights
     # @return [EtAzureInsights::Config]
     def self.config
       instance
+    end
+
+    # @param [Symbol] name The feature name as defined in the feature detector
+    # @return [Boolean] true if the instrumentor should be enabled
+    def feature_enabled?(name)
+      !disabled_features.include?(name)
+    end
+
+    private
+
+    def initialize
+      self.disabled_features = []
     end
   end
 end

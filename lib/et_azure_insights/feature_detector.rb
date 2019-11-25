@@ -28,10 +28,11 @@ module EtAzureInsights
 
   # @private
   class Feature
-    def initialize
+    def initialize(config: EtAzureInsights::Config.config)
       @dependencies = []
       @run_blocks = []
       self.executed = false
+      self.config = config
     end
 
     def name(*args)
@@ -62,10 +63,12 @@ module EtAzureInsights
 
     private
 
-    attr_accessor :executed
+    attr_accessor :executed, :config
 
     def check_dependencies
-      @dependencies.all?(&:call)
+      @dependencies.all? do |dep|
+        config.feature_enabled?(name) && dep.call(config)
+      end
     rescue StandardError
       false
     end

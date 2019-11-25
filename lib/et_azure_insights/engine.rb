@@ -7,6 +7,7 @@ module EtAzureInsights
     isolate_namespace EtAzureInsights
 
     config.azure_insights = ::Rails::Application::Configuration::Custom.new
+    config.azure_insights.disabled_features = []
 
     initializer :configure_azure_insights do |app|
       app.config.azure_insights.tap do |ai|
@@ -17,6 +18,7 @@ module EtAzureInsights
           c.insights_role_instance = ai.role_instance
           c.buffer_size = ai.buffer_size
           c.send_interval = ai.send_interval
+          c.disabled_features.concat ai.disabled_features
         end
       end
     end

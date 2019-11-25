@@ -40,4 +40,8 @@ Rails.application.configure do
 
   # Raises error for missing translations.
   # config.action_view.raise_on_missing_translations = true
+
+  #
+  # Disable net_http instrumentor so we dont instrument our own stuff
+  config.azure_insights.disabled_features << :net_http
 end
