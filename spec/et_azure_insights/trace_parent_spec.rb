@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require 'spec_helper'
 require 'et_azure_insights/trace_parent'
 RSpec.describe EtAzureInsights::TraceParent do
   subject(:trace_parent) { described_class }
@@ -138,5 +138,34 @@ RSpec.describe EtAzureInsights::TraceParent do
                                         span_id: satisfy { |v| v != 'g0f067aa0ba902ba' && v =~ /\A[0-9a-z]{16}\z/ },
                                         trace_flag: '01'
     end
+  end
+
+  describe '.from_span' do
+    let(:example_span) do
+      parent = EtAzureInsights::Correlation::Span.new(id: '0123456789abcdef0123456789abcdef', name: 'Fake operation', parent: EtAzureInsights::Correlation::RootSpan.new)
+      EtAzureInsights::Correlation::Span.new id: '0123456789abcdef', name: 'fake child span', parent: parent
+    end
+    it 'should return a TraceParent' do
+      result = trace_parent.from_span(example_span)
+      expect(result).to be_a(described_class)
+    end
+
+    it 'has the correct traceid' do
+      result = trace_parent.from_span(example_span)
+      expect(result.trace_id).to eq '0123456789abcdef0123456789abcdef'
+    end
+
+    it 'has the correct spanid' do
+      result = trace_parent.from_span(example_span)
+      expect(result.span_id).to eq '0123456789abcdef'
+    end
+  end
+
+  describe '#to_s' do
+    it 'outputs in the correct format' do
+      result = trace_parent.parse('01-0123456789abcdef0123456789abcdef-0123456789abcdef-01').to_s
+      expect(result).to eq '01-0123456789abcdef0123456789abcdef-0123456789abcdef-01'
+    end
+
   end
 end

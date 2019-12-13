@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'securerandom'
 module EtAzureInsights
   # Parses a 'Traceparent Header' as defined in https://www.w3.org/TR/trace-context
   class TraceParent
@@ -9,6 +10,21 @@ module EtAzureInsights
 
     def self.parse(str)
       new(str)
+    end
+
+    # Produces a traceparent from a span - only uses the first and last ids - representing
+    # the operation and the last span
+    def self.from_span(span)
+      path = span.path
+      if path.length > 1
+        new("#{DEFAULT_VERSION}-#{path.first}-#{path.last}-#{DEFAULT_TRACE_FLAG}")
+      else
+        new("#{DEFAULT_VERSION}-#{path.first}--#{DEFAULT_TRACE_FLAG}")
+      end
+    end
+
+    def to_s
+      [version, trace_id, span_id, trace_flag].join('-')
     end
 
     private

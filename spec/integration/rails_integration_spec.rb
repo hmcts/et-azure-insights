@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require 'spec_helper'
 require 'et_azure_insights'
 RSpec.describe 'EtAzureInsights rails integration' do
   it 'modifies the application to include the middleware' do

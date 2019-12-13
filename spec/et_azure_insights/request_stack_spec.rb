@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require 'spec_helper'
 RSpec.describe EtAzureInsights::RequestStack do
   subject(:stack) { described_class }
   describe '.for_request' do

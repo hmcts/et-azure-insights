@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'et_azure_insights/adapters/rack'
 module EtAzureInsights
   # This class is to allow the rails application to identify this gem as an engine and call
   # initializers etc..
@@ -23,8 +24,11 @@ module EtAzureInsights
       end
     end
 
-    initializer :install_azure_insights_features do
-      FeatureDetector.install_all!
+    initializer :install_azure_insights_middleware do |app|
+      app.configure do |c|
+        c.middleware.use EtAzureInsights::Adapters::Rack,
+                         config: EtAzureInsights.config
+      end
     end
   end
 end

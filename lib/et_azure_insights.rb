@@ -2,13 +2,14 @@
 
 require 'application_insights'
 require 'et_azure_insights/feature_detector'
-require 'et_azure_insights/engine'
 require 'et_azure_insights/config'
 require 'et_azure_insights/instrumentors'
-require 'et_azure_insights/correlation_id_manager'
+require 'et_azure_insights/correlation'
+require 'et_azure_insights/request_adapter'
 require 'et_azure_insights/request_stack'
 require 'et_azure_insights/client'
 require 'et_azure_insights/client_builder'
+require 'et_azure_insights/engine' if Object.const_defined?(:Rails)
 
 # ET Azure Insights
 #
@@ -24,6 +25,11 @@ module EtAzureInsights
 
   def self.configure(&block)
     EtAzureInsights::Config.configure(&block)
+    FeatureDetector.install_all!
+  end
+
+  def self.client
+    EtAzureInsights::Client.client
   end
 
   def self.global_insights_channel

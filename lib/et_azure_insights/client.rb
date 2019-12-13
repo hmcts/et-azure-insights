@@ -1,9 +1,14 @@
 # frozen_string_literal: true
 
+require 'net/http'
 module EtAzureInsights
   # A drop in replacement for ApplicationInsights::TelemetryClient
   # but supports extra features.
   class Client
+    def self.client
+      Thread.current[:azure_insights_global_client] ||= new
+    end
+
     def initialize(config: EtAzureInsights.config, channel: EtAzureInsights.global_insights_channel)
       self.config = config
       self.channel = channel
@@ -12,6 +17,8 @@ module EtAzureInsights
       configure_role_name
       configure_instrumentation_key
     end
+
+    attr_reader :context
 
     # Send information about the page viewed in the application (a web page for
     # instance).
@@ -234,7 +241,8 @@ module EtAzureInsights
 
     private
 
-    attr_accessor :config, :channel, :context
+    attr_accessor :config, :channel
+    attr_writer :context
 
     def configure_role_instance
       context.cloud.role_instance = config.insights_role_instance unless config.insights_role_instance.nil?
