@@ -94,3 +94,5 @@ RSpec.configure do |config|
   #   # as the one that triggered the failure.
   #   Kernel.srand config.seed
 end
+require 'active_support/json'
+Dir[File.absolute_path('./support/**/*.rb', __dir__)].each { |f| require f }

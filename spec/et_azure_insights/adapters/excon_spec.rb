@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require 'spec_helper'
 require 'et_azure_insights/adapters/excon'
 RSpec.describe EtAzureInsights::Adapters::Excon do
   subject(:adapter) { described_class }

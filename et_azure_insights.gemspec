@@ -22,12 +22,15 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'application_insights', '~> 0.5.7' # Note, 0.5.7 is not released at this point so the Gemfile of the application
 
-  spec.add_development_dependency 'pg'
-  spec.add_development_dependency 'rails', '~> 6.0.1'
+  spec.add_development_dependency 'activesupport', '~> 6.0', '>= 6.0.1'
+  spec.add_development_dependency 'rack', '~> 2.0', '>= 2.0.7'
+  spec.add_development_dependency 'random-port', '~> 0.5.1'
+  spec.add_development_dependency 'rspec', '~> 3.9'
   spec.add_development_dependency 'rspec-eventually', '~> 0.2.2'
-  spec.add_development_dependency 'rspec-rails', '~> 3.9'
   spec.add_development_dependency 'rubocop', '~> 0.76.0'
   spec.add_development_dependency 'sidekiq', '~> 6.0', '>= 6.0.3'
+  spec.add_development_dependency 'simplecov'
+  spec.add_development_dependency 'typhoeus', '~> 1.3', '>= 1.3.1'
   spec.add_development_dependency 'webmock', '~> 3.7', '>= 3.7.6'
   spec.add_development_dependency 'yard', '~> 0.9.20'
 end

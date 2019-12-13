@@ -15,18 +15,7 @@ RSpec.describe EtAzureInsights::Sidekiq::TrackServerJob do
   subject(:middleware) { described_class.new config: example_config }
   let(:example_worker) { double('Worker') }
   let(:example_queue) { 'default' }
-  let(:call_collector) { [] }
-
-  before do
-    calls = call_collector
-    responder = lambda { |request|
-      data = Zlib.gunzip(request.body)
-      calls << JSON.parse(data)
-      { body: '', status: 200, headers: {} }
-    }
-    stub_request(:post, 'https://dc.services.visualstudio.com/v2/track')
-      .to_return(responder)
-  end
+  include_context 'insights call collector'
 
   context 'using an active job job' do
     let(:example_job) do
@@ -67,7 +56,7 @@ RSpec.describe EtAzureInsights::Sidekiq::TrackServerJob do
       base_data_matcher = a_hash_including 'responseCode' => 200,
                                            'success' => true
       data_matcher = a_hash_including('baseData' => base_data_matcher, 'baseType' => 'RequestData')
-      expect(call_collector.flatten.map { |call| call.dig('data') }).to include data_matcher
+      expect(insights_call_collector.flatten.map { |call| call.dig('data') }).to include data_matcher
     end
 
     it 'sends request data with the correct cloud role and instance' do
@@ -75,7 +64,7 @@ RSpec.describe EtAzureInsights::Sidekiq::TrackServerJob do
       sleep 0.1
       data_matcher = a_hash_including 'ai.cloud.role' => example_config.insights_role_name,
                                       'ai.cloud.roleInstance' => example_config.insights_role_instance
-      expect(call_collector.flatten.map { |call| call.dig('tags') }).to include data_matcher
+      expect(insights_call_collector.flatten.map { |call| call.dig('tags') }).to include data_matcher
     end
 
     it 'yields with the job id as the request id in the tracker' do

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require 'spec_helper'
+require 'et_azure_insights/sidekiq/track_client_job'
 RSpec.describe EtAzureInsights::Sidekiq::TrackClientJob do
   let(:example_config) do
     instance_double EtAzureInsights::Config,
@@ -15,18 +16,7 @@ RSpec.describe EtAzureInsights::Sidekiq::TrackClientJob do
   let(:example_worker_class) { 'ExampleWorker' }
   let(:example_queue) { 'default' }
   let(:example_redis_pool) { nil }
-  let(:call_collector) { [] }
-
-  before do
-    calls = call_collector
-    responder = lambda { |request|
-      data = Zlib.gunzip(request.body)
-      calls << JSON.parse(data)
-      { body: '', status: 200, headers: {} }
-    }
-    stub_request(:post, 'https://dc.services.visualstudio.com/v2/track')
-      .to_return(responder)
-  end
+  include_context 'insights call collector'
 
   context 'using an active job job' do
     let(:example_job) do
@@ -71,7 +61,7 @@ RSpec.describe EtAzureInsights::Sidekiq::TrackClientJob do
       base_data_matcher = a_hash_including('name' => 'sidekiq_job_queued',
                                            'properties' => properties_matcher)
       data_matcher = a_hash_including('baseData' => base_data_matcher, 'baseType' => 'EventData')
-      expect(call_collector.flatten.map { |call| call.dig('data') }).to include data_matcher
+      expect(insights_call_collector.flatten.map { |call| call.dig('data') }).to include data_matcher
     end
   end
 end

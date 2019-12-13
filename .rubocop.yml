@@ -18,7 +18,3 @@ Style/Documentation:
     - 'spec/**/*'
 Metrics/LineLength:
   Max: 150
-AllCops:
-  Exclude:
-    - 'spec/dummy/**/*'
-
