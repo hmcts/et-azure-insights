@@ -12,21 +12,19 @@ module EtAzureInsights
     class Rack
       include EtAzureInsights::ClientHelper
       def initialize(app, config: EtAzureInsights.config,
-                     client: EtAzureInsights.client,
                      correlation_request: EtAzureInsights::RequestAdapter::Rack,
                      correlation_span: EtAzureInsights::Correlation::Span)
         self.config = config
         self.app = app
-        self.client = client
         self.correlation_request = correlation_request
         self.correlation_span = correlation_span
       end
 
-      def call(env)
+      def call(env, client: EtAzureInsights::Client.client)
         meta = {}
-        response = call_and_record(env, meta)
-        send_exception_telemetry(meta[:exception]) unless meta[:exception].nil?
-        send_request_telemetry(env, response, meta[:start], meta[:duration])
+        response = call_and_record(env, meta, client)
+        send_exception_telemetry(meta[:exception], client) unless meta[:exception].nil?
+        send_request_telemetry(env, response, meta[:start], meta[:duration], client)
         raise meta[:exception] if meta[:exception] && meta[:raise_exception]
 
         response
@@ -34,24 +32,24 @@ module EtAzureInsights
 
       private
 
-      def call_and_record(env, meta)
+      def call_and_record(env, meta, client)
         request = correlation_request.from_env(env)
         with_correlation(env) do |span|
           span.open name: request.name, id: generate_span_id do |child_span|
             env['et_azure_insights.span_path'] = child_span.path
-            configure_telemetry_from_span(request, child_span)
+            configure_telemetry_from_span(request, child_span, client)
             result = call_app_with_error_handler(env, meta)
-            configure_telemetry_from_span(request, span)
+            configure_telemetry_from_span(request, span, client)
             result
           end
         end
       end
 
-      def configure_telemetry_from_span(request, span)
+      def configure_telemetry_from_span(request, span, client)
         span_path = span.path
         operation_id = "|#{span_path.first}."
         operation_parent_id = span_path.empty? ? nil : "|#{span_path.join('.')}."
-        configure_telemetry_context!(operation_id: operation_id, operation_parent_id: operation_parent_id, operation_name: request.name)
+        configure_telemetry_context!(operation_id: operation_id, operation_parent_id: operation_parent_id, operation_name: request.name, client: client)
       end
 
       def call_app_with_error_handler(env, meta)
@@ -74,7 +72,7 @@ module EtAzureInsights
         meta[:raise_exception] = false
       end
 
-      attr_accessor :config, :app, :client, :correlation_request, :correlation_span
+      attr_accessor :config, :app, :correlation_request, :correlation_span
 
       def with_correlation(env, &block)
         request = correlation_request.from_env(env)
@@ -104,7 +102,7 @@ module EtAzureInsights
         SecureRandom.hex(16)
       end
 
-      def send_request_telemetry(env, response, start, duration)
+      def send_request_telemetry(env, response, start, duration, client)
         span_path = env['et_azure_insights.span_path']
         request_id = span_path.length > 1 ? "|#{span_path.first}.#{span_path.last}." : "|#{span_path.first}."
         start_time = start.iso8601(7)
@@ -115,7 +113,7 @@ module EtAzureInsights
         client.track_request(request_id, start_time, formatted_duration, status.to_s, success, options)
       end
 
-      def send_exception_telemetry(exception)
+      def send_exception_telemetry(exception, client)
         client.track_exception(exception)
       end
 

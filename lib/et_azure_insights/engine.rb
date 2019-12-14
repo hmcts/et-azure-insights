@@ -20,6 +20,7 @@ module EtAzureInsights
           c.buffer_size = ai.buffer_size
           c.send_interval = ai.send_interval
           c.disabled_features.concat ai.disabled_features
+          c.logger = ai.logger unless ai.logger.nil?
         end
       end
     end

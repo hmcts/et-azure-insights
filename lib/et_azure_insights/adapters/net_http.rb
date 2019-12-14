@@ -30,11 +30,12 @@ module EtAzureInsights
       end
 
       def initialize(client: EtAzureInsights::Client.client, correlation_span: EtAzureInsights::Correlation::Span,
-                     trace_parent: EtAzureInsights::TraceParent)
+                     trace_parent: EtAzureInsights::TraceParent, logger: EtAzureInsights.logger)
         self.client = client
         self.correlation_span = correlation_span
         self.trace_parent = trace_parent
         self.enabled = true
+        self.logger = logger
       end
 
       def call(request, http, &block)
@@ -52,7 +53,7 @@ module EtAzureInsights
 
       private
 
-      attr_accessor :client, :correlation_span, :trace_parent, :enabled
+      attr_accessor :client, :correlation_span, :trace_parent, :enabled, :logger
 
       def should_skip?(request, http)
         !enabled || http.address =~ /dc\.services\.visualstudio\.com/ || request['et-azure-insights-no-track'] == 'true'
@@ -68,6 +69,8 @@ module EtAzureInsights
 
       def send_to_client(span, request, response, http, duration)
         return unless (200..299).include? response.code.to_i
+
+        logger.debug("NetHTTP Adapter sending to insights with operation named #{client.context.operation.name}")
 
         request_uri = uri(http, request)
         client.track_dependency id_from_span(span),

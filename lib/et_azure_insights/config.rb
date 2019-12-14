@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'singleton'
+require 'et_azure_insights/null_logger'
 module EtAzureInsights
   # Configuration instance for Et Azure Insights
   # Note that the configure and config methods are aliased in the top level EtAzureInsights module also for convenience
@@ -26,7 +27,7 @@ module EtAzureInsights
     attr_accessor :buffer_size, :send_interval
     attr_accessor :disabled_features
     attr_accessor :disable_all_features
-    attr_accessor :api_url
+    attr_accessor :logger
 
     # Yields and/or returns the single config instance to allow setting of values
     # @yield [EtAzureInsights::Config]
@@ -52,7 +53,7 @@ module EtAzureInsights
 
     def initialize
       self.disabled_features = []
-      self.api_url = 'https://dc.services.visualstudio.com/api'
+      self.logger = ::EtAzureInsights::NullLogger.new
     end
   end
 end

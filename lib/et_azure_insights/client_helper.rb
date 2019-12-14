@@ -13,7 +13,7 @@ module EtAzureInsights
       Time.at(duration_seconds).gmtime.strftime('00.%H:%M:%S.%7N')
     end
 
-    def configure_telemetry_context!(operation_id:, operation_parent_id:, operation_name:)
+    def configure_telemetry_context!(operation_id:, operation_parent_id:, operation_name:, client:)
       context = client.context
       setup_operation(context, operation_id: operation_id, operation_parent_id: operation_parent_id, operation_name: operation_name)
       setup_cloud(context)

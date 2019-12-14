@@ -9,6 +9,7 @@ require 'et_azure_insights/request_adapter'
 require 'et_azure_insights/request_stack'
 require 'et_azure_insights/client'
 require 'et_azure_insights/client_builder'
+require 'et_azure_insights/null_logger'
 require 'et_azure_insights/engine' if Object.const_defined?(:Rails)
 
 # ET Azure Insights
@@ -21,6 +22,10 @@ require 'et_azure_insights/engine' if Object.const_defined?(:Rails)
 module EtAzureInsights
   def self.config
     EtAzureInsights::Config.config
+  end
+
+  def self.logger
+    config.logger
   end
 
   def self.configure(&block)
