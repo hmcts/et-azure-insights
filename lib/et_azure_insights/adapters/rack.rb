@@ -80,12 +80,12 @@ module EtAzureInsights
           # Open a span representing the external trace info
           within_parent_correlation_span(request, &block)
         else
-          within_new_correlation_span(&block)
+          within_new_correlation_span(request, &block)
         end
       end
 
-      def within_new_correlation_span(&block)
-        correlation_span.current.open name: 'operation', id: generate_trace_id, &block
+      def within_new_correlation_span(request, &block)
+        correlation_span.current.open name: 'operation', id: request.request_id, &block
       end
 
       def within_parent_correlation_span(request, &block)
@@ -96,10 +96,6 @@ module EtAzureInsights
 
       def generate_span_id
         SecureRandom.hex(8)
-      end
-
-      def generate_trace_id
-        SecureRandom.hex(16)
       end
 
       def send_request_telemetry(env, response, start, duration, client)

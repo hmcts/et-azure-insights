@@ -50,6 +50,14 @@ RSpec.describe EtAzureInsights::Adapters::Rack do
       rack.call(fake_request_env, client: fake_client)
     end
 
+    it 'calls track_request with the correct operation id supplied from ActionDispatch::RequestId middleware if in use in rails or similar environment' do
+      expect(fake_app).to receive(:call) do |env|
+        expect(fake_client_operation).to have_received(:id=).with('|c1b40e908df64ed1b27e4344c2557642.')
+        fake_app_response
+      end
+      rack.call(fake_request_env.merge('action_dispatch.request_id' => 'c1b40e90-8df6-4ed1-b27e-4344c2557642'), client: fake_client)
+    end
+
     it 'sets the operation parent id set to the request id' do
       expected_request_id = nil
       expect(fake_app).to receive(:call) do |env|

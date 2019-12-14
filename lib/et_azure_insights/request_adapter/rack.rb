@@ -44,6 +44,12 @@ module EtAzureInsights
         !parsed_traceparent.nil?
       end
 
+      def request_id
+        return SecureRandom.hex(16) unless request.env.key?('action_dispatch.request_id')
+
+        request.env['action_dispatch.request_id'].gsub('-', '')
+      end
+
       def_delegators :request, :url, :path, :has_header?, :fetch_header, :get_header
 
       private
