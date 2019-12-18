@@ -25,7 +25,7 @@ module EtAzureInsights
       end
 
       def url
-        "sidekiq://#{request.klass.split('::').last}#{path}"
+        "sidekiq://#{request.queue}/#{request.klass.split('::').last}#{path}"
       end
 
       def path
@@ -33,7 +33,7 @@ module EtAzureInsights
       end
 
       def name
-        @name ||= "#{request_method.to_s.upcase} #{path}"
+        @name ||= "#{request_method.to_s.upcase} /#{request.queue}/#{request.klass.split('::').last}#{path}"
       end
 
       def request_method

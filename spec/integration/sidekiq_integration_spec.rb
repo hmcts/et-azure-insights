@@ -26,6 +26,7 @@ RSpec.describe 'Sidekiq integration' do
       r = rack_servers
       FakeWorker = Class.new do
         include Sidekiq::Worker
+        sidekiq_options queue: 'my_queue'
 
         define_method :perform do
           r.get_request(:app2, '/from_sidekiq', disable_tracking: false)
@@ -83,8 +84,8 @@ RSpec.describe 'Sidekiq integration' do
         'resultCode' => '200',
         'duration' => instance_of(String),
         'success' => true,
-        'name' => match(/\APERFORM \/[0-9a-f]{24}\z/),
-        'data' => match(/\APERFORM \/[0-9a-f]{24}\z/),
+        'name' => match(/\APERFORM \/my_queue\/FakeWorker\/[0-9a-f]{24}\z/),
+        'data' => match(/\APERFORM \/my_queue\/FakeWorker\/[0-9a-f]{24}\z/),
         'type' => 'Sidekiq (tracked component)'
       )
       expected = a_hash_including 'ver' => 1,
@@ -117,8 +118,8 @@ RSpec.describe 'Sidekiq integration' do
                                                'responseCode' => '200',
                                                'duration' => instance_of(String),
                                                'success' => true,
-                                               'name' => match(/\APERFORM \/[0-9a-f]{24}\z/),
-                                               'url' => match(/\Asidekiq:\/\/FakeWorker\/[0-9a-f]{24}\z/),
+                                               'name' => match(/\APERFORM \/my_queue\/FakeWorker\/[0-9a-f]{24}\z/),
+                                               'url' => match(/\Asidekiq:\/\/my_queue\/FakeWorker\/[0-9a-f]{24}\z/),
                                                'properties' => a_hash_including('httpMethod' => 'PERFORM')
 
 
@@ -146,7 +147,7 @@ RSpec.describe 'Sidekiq integration' do
         'ai.cloud.role' => 'fakerolename',
         'ai.cloud.roleInstance' => 'fakeroleinstance',
         'ai.operation.id' => first_request.dig('tags', 'ai.operation.id'),
-        'ai.operation.name' => /\APERFORM \/[0-9a-f]{16}/
+        'ai.operation.name' => /\APERFORM \/my_queue\/FakeWorker\/[0-9a-f]{16}/
       )
       base_data_expectation = a_hash_including(
         'ver' => 2,

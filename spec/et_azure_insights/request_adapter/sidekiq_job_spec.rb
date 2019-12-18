@@ -10,7 +10,7 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
       {
         'class' => 'ActiveJob::QueueAdapters::SidekiqAdapter::JobWrapper',
         'wrapped' => 'EventJob',
-        'queue' => 'events',
+        'queue' => 'my_queue',
         'azure_insights_headers' => {
           'TEST_HEADER' => 'test header value'
         },
@@ -19,7 +19,7 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
             'job_class' => 'EventJob',
             'job_id' => '57cd9ebe-b735-4183-b9cf-4a603b3deea9',
             'provider_job_id' => nil,
-            'queue_name' => 'events',
+            'queue_name' => 'my_queue',
             'priority' => nil,
             'arguments' => [
               'PrepareClaimHandler',
@@ -49,13 +49,13 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
     it 'has the correct url' do
       result = described_class.from_job_hash(fake_job_hash)
 
-      expect(result.url).to eql 'sidekiq://JobWrapper/63ab2d8dc8f4f714b0b5cdec'
+      expect(result.url).to eql 'sidekiq://my_queue/JobWrapper/63ab2d8dc8f4f714b0b5cdec'
     end
 
     it 'has the correct name' do
       result = described_class.from_job_hash(fake_job_hash)
 
-      expect(result.name).to eql 'PERFORM /63ab2d8dc8f4f714b0b5cdec'
+      expect(result.name).to eql 'PERFORM /my_queue/JobWrapper/63ab2d8dc8f4f714b0b5cdec'
     end
 
     it 'has the correct request_method' do
@@ -167,7 +167,7 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
       {
         'class' => 'ActiveJob::QueueAdapters::SidekiqAdapter::JobWrapper',
         'wrapped' => 'EventJob',
-        'queue' => 'events',
+        'queue' => 'my_queue',
         'azure_insights_headers' => {
           'TEST_HEADER' => 'test header value'
         },
@@ -176,7 +176,7 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
             'job_class' => 'EventJob',
             'job_id' => '57cd9ebe-b735-4183-b9cf-4a603b3deea9',
             'provider_job_id' => nil,
-            'queue_name' => 'events',
+            'queue_name' => 'my_queue',
             'priority' => nil,
             'arguments' => [
               'PrepareClaimHandler',
@@ -216,13 +216,13 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
         {
           'class' => 'ActiveJob::QueueAdapters::SidekiqAdapter::JobWrapper',
           'wrapped' => 'EventJob',
-          'queue' => 'events',
+          'queue' => 'my_queue',
           'args' => [
             {
               'job_class' => 'EventJob',
               'job_id' => '57cd9ebe-b735-4183-b9cf-4a603b3deea9',
               'provider_job_id' => nil,
-              'queue_name' => 'events',
+              'queue_name' => 'my_queue',
               'priority' => nil,
               'arguments' => [
                 'PrepareClaimHandler',
@@ -263,7 +263,7 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
               'job_class' => 'EventJob',
               'job_id' => '57cd9ebe-b735-4183-b9cf-4a603b3deea9',
               'provider_job_id' => nil,
-              'queue_name' => 'events',
+              'queue_name' => 'my_queue',
               'priority' => nil,
               'arguments' => [
                 'PrepareClaimHandler',
@@ -314,13 +314,13 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
         {
           'class' => 'ActiveJob::QueueAdapters::SidekiqAdapter::JobWrapper',
           'wrapped' => 'EventJob',
-          'queue' => 'events',
+          'queue' => 'my_queue',
           'args' => [
             {
               'job_class' => 'EventJob',
               'job_id' => '57cd9ebe-b735-4183-b9cf-4a603b3deea9',
               'provider_job_id' => nil,
-              'queue_name' => 'events',
+              'queue_name' => 'my_queue',
               'priority' => nil,
               'arguments' => [
                 'PrepareClaimHandler',
@@ -352,7 +352,7 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
         {
           'class' => 'ActiveJob::QueueAdapters::SidekiqAdapter::JobWrapper',
           'wrapped' => 'EventJob',
-          'queue' => 'events',
+          'queue' => 'my_queue',
           'azure_insights_headers' => {
             'traceparent' => 'traceparentheadervalue'
           },
@@ -361,7 +361,7 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
               'job_class' => 'EventJob',
               'job_id' => '57cd9ebe-b735-4183-b9cf-4a603b3deea9',
               'provider_job_id' => nil,
-              'queue_name' => 'events',
+              'queue_name' => 'my_queue',
               'priority' => nil,
               'arguments' => [
                 'PrepareClaimHandler',
@@ -410,13 +410,13 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
         {
           'class' => 'ActiveJob::QueueAdapters::SidekiqAdapter::JobWrapper',
           'wrapped' => 'EventJob',
-          'queue' => 'events',
+          'queue' => 'my_queue',
           'args' => [
             {
               'job_class' => 'EventJob',
               'job_id' => '57cd9ebe-b735-4183-b9cf-4a603b3deea9',
               'provider_job_id' => nil,
-              'queue_name' => 'events',
+              'queue_name' => 'my_queue',
               'priority' => nil,
               'arguments' => [
                 'PrepareClaimHandler',
@@ -448,7 +448,7 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
         {
           'class' => 'ActiveJob::QueueAdapters::SidekiqAdapter::JobWrapper',
           'wrapped' => 'EventJob',
-          'queue' => 'events',
+          'queue' => 'my_queue',
           'azure_insights_headers' => {
             'traceparent' => 'traceparentheadervalue'
           },
@@ -457,7 +457,7 @@ RSpec.describe EtAzureInsights::RequestAdapter::SidekiqJob do
               'job_class' => 'EventJob',
               'job_id' => '57cd9ebe-b735-4183-b9cf-4a603b3deea9',
               'provider_job_id' => nil,
-              'queue_name' => 'events',
+              'queue_name' => 'my_queue',
               'priority' => nil,
               'arguments' => [
                 'PrepareClaimHandler',
