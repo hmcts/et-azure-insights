@@ -2,6 +2,8 @@
 
 require 'et_azure_insights/client'
 require 'et_azure_insights/client_helper'
+require 'et_azure_insights/request_adapter/rack'
+require 'et_azure_insights/correlation'
 require 'rack/request'
 module EtAzureInsights
   module Adapters
