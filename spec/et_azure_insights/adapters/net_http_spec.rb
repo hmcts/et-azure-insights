@@ -21,7 +21,7 @@ RSpec.describe EtAzureInsights::Adapters::NetHttp do
 
   describe '#call' do
     include_context 'fake client'
-    subject(:adapter_instance) { described_class.new(client: fake_client) }
+    subject(:adapter_instance) { described_class.new }
     let(:fake_request_attrs) do
       {
         method: 'POST',
@@ -56,21 +56,21 @@ RSpec.describe EtAzureInsights::Adapters::NetHttp do
       end
 
       it 'calls the track_dependency method on the telemetry client' do
-        subject.call(fake_request, fake_http_instance) do
+        subject.call(fake_request, fake_http_instance, client: fake_client) do
           fake_response
         end
         expect(fake_client).to have_received(:track_dependency)
       end
 
       it 'calls the track_dependency method with the correct type on the telemetry client' do
-        subject.call(fake_request, fake_http_instance) do
+        subject.call(fake_request, fake_http_instance, client: fake_client) do
           fake_response
         end
         expect(fake_client).to have_received(:track_dependency).with(anything, anything, anything, anything, hash_including(type: 'Http (tracked component)'))
       end
 
       it 'sets the target of the dependency correctly' do
-        subject.call(fake_request, fake_http_instance) do
+        subject.call(fake_request, fake_http_instance, client: fake_client) do
           fake_response
         end
 
@@ -82,7 +82,7 @@ RSpec.describe EtAzureInsights::Adapters::NetHttp do
       #
 
       it 'sets the id of the dependency in the correct format' do
-        subject.call(fake_request, fake_http_instance) do
+        subject.call(fake_request, fake_http_instance, client: fake_client) do
           fake_response
         end
 
@@ -90,7 +90,7 @@ RSpec.describe EtAzureInsights::Adapters::NetHttp do
       end
 
       it 'sets the id of the dependency not ending with the parent' do
-        subject.call(fake_request, fake_http_instance) do
+        subject.call(fake_request, fake_http_instance, client: fake_client) do
           fake_response
         end
 

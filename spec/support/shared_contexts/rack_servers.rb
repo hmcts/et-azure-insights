@@ -1,4 +1,6 @@
 require 'random-port'
+require 'rack'
+require 'et_azure_insights/adapters/rack'
 # A shared context for managing multiple rack servers.
 # This will start all servers registered before the context and
 # stop them after the context.

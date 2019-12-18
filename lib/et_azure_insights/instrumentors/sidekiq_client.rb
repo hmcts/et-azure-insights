@@ -8,11 +8,7 @@ EtAzureInsights::FeatureDetector.define do
   end
 
   run do
-    require 'et_azure_insights/sidekiq/track_client_job'
-    ::Sidekiq.configure_client do |config|
-      config.client_middleware do |chain|
-        chain.add EtAzureInsights::Sidekiq::TrackClientJob
-      end
-    end
+    require 'et_azure_insights/adapters/sidekiq_client'
+    EtAzureInsights::Adapters::SidekiqClient.setup
   end
 end

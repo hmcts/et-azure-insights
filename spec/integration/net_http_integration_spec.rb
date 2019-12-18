@@ -32,36 +32,6 @@ RSpec.describe 'Rack and net http integration' do
       end
     end
 
-    let(:rack_app1_endpoint) { spy('Rack app 1 endpoint', call: [200, {}, ['OK from rack app 1']]) }
-    let(:rack_app1) do
-      endpoint = rack_app1_endpoint
-      Rack::Builder.new do
-        use ::EtAzureInsights::Adapters::Rack
-        run endpoint
-      end
-    end
-    let(:rack_app2_endpoint) { spy('Rack app 2 endpoint', call: [200, {}, ['OK from rack app 2']]) }
-    let(:rack_app2) do
-      endpoint = rack_app2_endpoint
-      Rack::Builder.new do
-        use ::EtAzureInsights::Adapters::Rack
-        run endpoint
-      end
-    end
-    let(:stub_app2) do
-      stub_request(:get, 'http://rackapp2.domain.com').to_rack(rack_app2)
-    end
-
-    before do
-      stub_app2
-      # rack app 1 to call rack app 2
-      allow(rack_app1_endpoint).to receive(:call) do |env|
-        uri = URI('http://rackapp2.domain.com')
-        Net::HTTP.get(uri)
-        [200, {}, ['OK from rack app 1 and rack app 2']]
-      end
-    end
-
     it 'inform insights of the start of the chain' do
       rack_servers.get_request(:app1, '/anything')
 

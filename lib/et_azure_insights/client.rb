@@ -235,8 +235,9 @@ module EtAzureInsights
       channel.write(data, context)
     end
 
-    def flush
+    def flush(wait: false)
       channel.flush
+      channel.queue.flush_notification.wait if wait
     end
 
     private
