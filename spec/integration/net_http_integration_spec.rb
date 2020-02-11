@@ -19,8 +19,8 @@ RSpec.describe 'Rack and net http integration' do
 
   context '2 service chain' do
     # Here, we will configure 2 rack applications
-    # The first rack app we will call ourselves outside of any form of web server (to save using net/http which might get confusing as thats what we are testing)
-    # The second rack app will be hosted by webmock so that the first rack app can talk to it using net/http
+    # Our test suite calls the first rack app with the tracking disabled (as we are not testing this part)
+    # The first rack app will call the second
     #
     include_context 'rack servers' do
       rack_servers.register(:app1) do |env|

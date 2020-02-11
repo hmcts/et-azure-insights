@@ -49,13 +49,28 @@ RSpec.describe EtAzureInsights::Adapters::Typhoeus do
     end
   end
 
+  describe '.uninstall' do
+    it 'removes the block added by .setup' do
+      fake_instance = instance_spy(described_class)
+      allow(adapter).to receive(:new).and_return fake_instance
+      blocks_recorded = []
+      allow(fake_typhoeus).to receive(:before) do |&block|
+        blocks_recorded << block if block
+        blocks_recorded
+      end
+      adapter.setup(typhoeus: fake_typhoeus)
+      adapter.uninstall(typhoeus: fake_typhoeus)
+      expect(blocks_recorded).to be_empty
+    end
+  end
+
   describe '#call' do
     let(:fake_client) { instance_spy(EtAzureInsights::Client) }
     let(:fake_response) { spy('Typhoeus::Response', success?: true, failure?: false, timed_out?: false, status_message: 'OK') }
-    subject(:adapter_instance) { described_class.setup(typhoeus: fake_typhoeus, client: fake_client) }
+    subject(:adapter_instance) { described_class.setup(typhoeus: fake_typhoeus) }
 
     it 'registers with the on_complete callback on the request' do
-      subject.call(fake_request)
+      subject.call(fake_request, client: fake_client)
       expect(fake_request).to have_received(:on_complete)
     end
 
@@ -64,7 +79,7 @@ RSpec.describe EtAzureInsights::Adapters::Typhoeus do
       allow(fake_request).to receive(:on_complete) do |*, &block|
         on_complete_block = block
       end
-      subject.call(fake_request)
+      subject.call(fake_request, client: fake_client)
       on_complete_block.call(fake_response)
 
       expect(fake_client).to have_received(:track_dependency)
