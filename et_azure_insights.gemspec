@@ -30,6 +30,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop', '~> 0.76.0'
   spec.add_development_dependency 'sidekiq', '~> 6.0', '>= 6.0.3'
   spec.add_development_dependency 'simplecov'
+  spec.add_development_dependency 'excon', '~> 0.72.0'
   spec.add_development_dependency 'typhoeus', '~> 1.3', '>= 1.3.1'
   spec.add_development_dependency 'webmock', '~> 3.7', '>= 3.7.6'
   spec.add_development_dependency 'yard', '~> 0.9.20'

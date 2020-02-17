@@ -18,13 +18,6 @@ RSpec.describe EtAzureInsights::Adapters::Redis do
     end
   end
 
-  describe '.setup' do
-    it 'modifies the client' do
-       adapter.setup(fake_redis_client: fake_redis_client)
-      boom!
-    end
-  end
-
   describe '#call_pipeline' do
     let(:fake_client) { instance_spy(EtAzureInsights::Client) }
     subject(:adapter_instance) { described_class.new(client: fake_client) }

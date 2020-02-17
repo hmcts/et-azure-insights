@@ -5,58 +5,107 @@ module EtAzureInsights
     # An adapter to hook into and process typhoeus requests / responses and send
     # them on as a dependency to insights
     class Excon
-      def self.setup(excon: ::Excon, config: EtAzureInsights.config, client: ClientBuilder.new(config: config).build)
+      def self.setup(excon: ::Excon)
         excon.defaults[:middlewares] << self
+      end
+
+      def self.uninstall(excon: ::Excon)
+        excon.defaults[:middlewares].reject! { |middleware| middleware == self }
       end
 
       def error_call(datum)
         # do stuff
         @stack.error_call(datum)
+        end_correlation(datum)
       end
 
       def request_call(datum)
-        # do stuff
+        self.start_time = Time.now
+        start_correlation(datum)
+        datum[:headers]['traceparent'] = trace_parent.from_span(request_span).to_s
         @stack.request_call(datum)
       end
 
-      def response_call(datum)
-        start = Time.now
+      def response_call(datum, client: EtAzureInsights::Client.client)
         @stack.response_call(datum).tap do
-          duration = Time.now - start
-          send_to_client(datum, duration)
+          duration = Time.now - start_time
+          send_to_client(client, datum, duration)
+          end_correlation(datum)
         end
       end
 
-      def initialize(stack, config: EtAzureInsights.config, client: ClientBuilder.new(config: config).build, request_stack: EtAzureInsights::RequestStack)
+      def initialize(stack, config: EtAzureInsights.config, correlation_span: EtAzureInsights::Correlation::Span,
+                     trace_parent: EtAzureInsights::TraceParent,
+                     logger: EtAzureInsights.logger)
         self.config = config
-        self.client = client
-        self.request_stack = request_stack
+        self.correlation_span = correlation_span
+        self.trace_parent = trace_parent
+        self.enabled = true
+        self.logger = logger
         self.stack = stack
       end
 
       private
 
-      attr_accessor :config, :client, :request_stack, :stack
+      attr_accessor :config, :stack, :correlation_span, :trace_parent, :enabled,
+                    :logger, :start_time, :request_span, :starting_span, :operation_span
 
 
-      def send_to_client(datum, duration)
-        with_request_id do
-          request_id = request_stack.last
-          query = datum[:query].nil? ? '' : "?#{datum[:query]}"
-          request_url = URI.parse("#{datum[:scheme]}://#{datum[:host]}:#{datum[:port]}#{datum[:path]}#{query}").to_s
-          if (200..399).include?(datum.dig(:response, :status))
-            client.track_dependency request_id,
-                                    format_request_duration(duration),
-                                    datum.dig(:response, :status).to_s,
-                                    true,
-                                    target: request_url,
-                                    name: "#{datum[:method]} #{request_url}",
-                                    type: 'HTTP',
-                                    data: "#{datum[:method]} #{request_url}"
-          else
-            raise "Not yet implemented"
-          end
+      def send_to_client(client, datum, duration)
+        query = datum[:query].nil? ? '' : "?#{datum[:query]}"
+        request_uri = URI.parse("#{datum[:scheme]}://#{datum[:host]}:#{datum[:port]}#{datum[:path]}#{query}")
+        if (200..399).include?(datum.dig(:response, :status))
+          client.track_dependency id_from_request_span,
+                                  format_request_duration(duration),
+                                  datum.dig(:response, :status).to_s,
+                                  true,
+                                  target: target_for(request_uri), type: 'Http (tracked component)',
+                                  name: "#{datum[:method].upcase} #{request_uri}",
+                                  data: "#{datum[:method].upcase} #{request_uri}"
+        else
+          raise "Not yet implemented"
         end
+      end
+
+      def id_from_request_span
+        span_path = request_span.path
+        span_path.length > 1 ? "|#{span_path.first}.#{span_path.last}." : "|#{span_path.first}."
+      end
+
+      def target_for(request_uri)
+        components = [request_uri.host]
+        components << request_uri.port unless request_uri.port == request_uri.default_port
+        components.join(':')
+      end
+
+      def open_operation_span(&block)
+        self.operation_span = if correlation_span.current.root?
+                                correlation_span.current.open id: SecureRandom.hex(16), name: 'Unknown Operation'
+                              else
+                                correlation_span.current
+                              end
+      end
+
+      def start_correlation(datum)
+        self.starting_span = correlation_span.current
+        open_operation_span
+        request_path = datum[:path]
+        request_path = '/' if request_path == ''
+        open_request_span(datum, request_path)
+      end
+
+      def end_correlation(datum)
+        until correlation_span.current.equal?(starting_span) do
+          correlation_span.current.close
+        end
+      end
+
+      def close_request_span
+        request_span.close
+      end
+
+      def open_request_span(datum, request_path)
+        self.request_span = operation_span.open id: SecureRandom.hex(8), name: "#{datum[:method].to_s.upcase} #{request_path}"
       end
 
       def format_request_duration(duration_seconds)
@@ -66,11 +115,6 @@ module EtAzureInsights
         end
 
         Time.at(duration_seconds).gmtime.strftime('00.%H:%M:%S.%7N')
-      end
-
-      def with_request_id(&block)
-        request_id = "excon-#{SecureRandom.uuid}"
-        request_stack.for_request(request_id, &block)
       end
     end
   end

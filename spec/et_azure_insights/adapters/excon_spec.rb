@@ -53,10 +53,14 @@ RSpec.describe EtAzureInsights::Adapters::Excon do
 
   describe '#response_call' do
     let(:fake_client) { instance_spy(EtAzureInsights::Client) }
-    subject(:adapter_instance) { described_class.new(fake_excon_stack, client: fake_client) }
+    subject(:adapter_instance) { described_class.new(fake_excon_stack) }
+
+    before do
+      subject.request_call(fake_response_datum)
+    end
 
     it 'calls the track_dependency method on the telemetry client' do
-      subject.response_call(fake_response_datum)
+      subject.response_call(fake_response_datum, client: fake_client)
       expect(fake_client).to have_received(:track_dependency)
     end
   end

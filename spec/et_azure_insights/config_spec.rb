@@ -101,9 +101,9 @@ RSpec.describe EtAzureInsights::Config do
 
     describe 'send_interval=' do
       around do |example|
-        old = EtAzureInsights::Config.config.send_interval
+        old = EtAzureInsights::Config.config.buffer_size
         example.run
-        EtAzureInsights::Config.config.send_interval = old
+        EtAzureInsights::Config.config.buffer_size = old
       end
 
       it 'writes the value as a float' do

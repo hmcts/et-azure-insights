@@ -3,7 +3,7 @@ require 'et_azure_insights'
 require 'et_azure_insights/correlation/span'
 
 RSpec.describe EtAzureInsights::Correlation::Span do
-  subject(:span) { described_class.new(name: 'root span') }
+  subject(:span) { EtAzureInsights::Correlation::RootSpan.new }
   before { described_class.reset_current }
 
   describe '.current' do
@@ -16,22 +16,22 @@ RSpec.describe EtAzureInsights::Correlation::Span do
 
   describe '#open' do
     it 'stores the name and id which are publically accessible' do
-      child = span.open name: 'child span', id: '4bf92f3577b34da6a3ce929d0e0e4736'
-
-      expect(child).to have_attributes name: 'child span',
-                                       id: '4bf92f3577b34da6a3ce929d0e0e4736'
+      span.open name: 'child span', id: '4bf92f3577b34da6a3ce929d0e0e4736' do |child|
+        expect(child).to have_attributes name: 'child span',
+                                         id: '4bf92f3577b34da6a3ce929d0e0e4736'
+      end
     end
 
     it 'creates a new span traceable back to its parent' do
-      child = span.open name: 'child span', id: '4bf92f3577b34da6a3ce929d0e0e4736'
-
-      expect(child.parent).to be span
+      span.open name: 'child span', id: '4bf92f3577b34da6a3ce929d0e0e4736' do |child|
+        expect(child.parent).to be span
+      end
     end
 
     it 'sets the current span to the child' do
-      child = span.open(name: 'child span', id: '4bf92f3577b34da6a3ce929d0e0e4736')
-
-      expect(described_class.current).to be child
+      span.open(name: 'child span', id: '4bf92f3577b34da6a3ce929d0e0e4736') do |child|
+        expect(described_class.current).to be child
+      end
     end
 
     it 'yields the span to the block if provided' do
@@ -66,23 +66,28 @@ RSpec.describe EtAzureInsights::Correlation::Span do
     it 'raises an exception if it is not the current span' do
       span  #Just to open the 2nd span
       expect { parent_span.close }.to raise_error(EtAzureInsights::Correlation::SpanNotCurrentError, "The span 'parent span' cannot be closed as the current span is 'child span'")
+    ensure
+      EtAzureInsights::Correlation::Span.reset_current
     end
 
     it 'sets the current span to the parent' do
       span.close
 
       expect(described_class.current).to be parent_span
+    ensure
+      EtAzureInsights::Correlation::Span.reset_current
     end
   end
 
   describe 'path' do
-    let(:root_span) { EtAzureInsights::Correlation::RootSpan.new }
-    let(:grandparent_span) { root_span.open(name: 'grandparent span', id: '4bf92f3577b34da6a3ce929d0e0e4736') }
-    let(:parent_span) { grandparent_span.open(name: 'parent span', id: '00f067aa0ba902b7') }
-    subject(:span) { parent_span.open(name: 'child span', id: 'fff067aa0ba902b7') }
-
     it 'is the correct array that can be joined easily' do
-      expect(span.path).to eql ['4bf92f3577b34da6a3ce929d0e0e4736', '00f067aa0ba902b7', 'fff067aa0ba902b7']
+      span.open(name: 'grandparent span', id: '4bf92f3577b34da6a3ce929d0e0e4736') do |grandparent_span|
+        grandparent_span.open(name: 'parent span', id: '00f067aa0ba902b7') do |parent_span|
+          parent_span.open(name: 'child span', id: 'fff067aa0ba902b7') do |child_span|
+            expect(child_span.path).to eql ['4bf92f3577b34da6a3ce929d0e0e4736', '00f067aa0ba902b7', 'fff067aa0ba902b7']
+          end
+        end
+      end
     end
   end
 end

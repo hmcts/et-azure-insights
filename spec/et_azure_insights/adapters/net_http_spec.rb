@@ -12,13 +12,6 @@ RSpec.describe EtAzureInsights::Adapters::NetHttp do
     end
   end
 
-  describe '.setup' do
-    it 'configures a middleware object' do
-       adapter.setup(net_http: fake_net_http)
-      boom!
-    end
-  end
-
   describe '#call' do
     include_context 'fake client'
     subject(:adapter_instance) { described_class.new }
