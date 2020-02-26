@@ -67,15 +67,13 @@ module EtAzureInsights
       end
 
       def send_to_client(client, span, request, response, http, duration)
-        return unless (200..299).include? response.code.to_i
-
         logger.debug("NetHTTP Adapter sending to insights with operation named #{client.context.operation.name}")
 
         request_uri = uri(http, request)
         client.track_dependency id_from_span(span),
                                 format_request_duration(duration),
                                 response.code,
-                                true,
+                                (200..299).include?(response.code.to_i),
                                 target: target_for(request_uri), type: 'Http (tracked component)',
                                 name: "#{request.method} #{request_uri}",
                                 data: "#{request.method} #{request_uri}"
