@@ -54,17 +54,13 @@ module EtAzureInsights
       def send_to_client(client, datum, duration)
         query = datum[:query].nil? ? '' : "?#{datum[:query]}"
         request_uri = URI.parse("#{datum[:scheme]}://#{datum[:host]}:#{datum[:port]}#{datum[:path]}#{query}")
-        if (200..399).include?(datum.dig(:response, :status))
-          client.track_dependency id_from_request_span,
-                                  format_request_duration(duration),
-                                  datum.dig(:response, :status).to_s,
-                                  true,
-                                  target: target_for(request_uri), type: 'Http (tracked component)',
-                                  name: "#{datum[:method].upcase} #{request_uri}",
-                                  data: "#{datum[:method].upcase} #{request_uri}"
-        else
-          raise "Not yet implemented"
-        end
+        client.track_dependency id_from_request_span,
+                                format_request_duration(duration),
+                                datum.dig(:response, :status).to_s,
+                                (200..399).include?(datum.dig(:response, :status)),
+                                target: target_for(request_uri), type: 'Http (tracked component)',
+                                name: "#{datum[:method].upcase} #{request_uri}",
+                                data: "#{datum[:method].upcase} #{request_uri}"
       end
 
       def id_from_request_span
