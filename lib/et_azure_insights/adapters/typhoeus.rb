@@ -51,19 +51,13 @@ module EtAzureInsights
       def send_to_client(client, span, request, response, duration)
         request_uri = URI.parse(request.base_url)
         request_url = request_uri.path == '' ? "#{request_uri}/" : "#{request_uri}"
-        if response.success?
-          client.track_dependency id_from_span(span),
-                                  format_request_duration(duration),
-                                  response.response_code.to_s,
-                                  true,
-                                  target: target_for(request_uri), type: 'Http (tracked component)',
-                                  name: "#{request.options[:method].to_s.upcase} #{request_url}",
-                                  data: "#{request.options[:method].to_s.upcase} #{request_url}"
-        elsif response.timed_out?
-
-        elsif response.failure?
-
-        end
+        client.track_dependency id_from_span(span),
+                                format_request_duration(duration),
+                                response.response_code.to_s,
+                                response.success?,
+                                target: target_for(request_uri), type: 'Http (tracked component)',
+                                name: "#{request.options[:method].to_s.upcase} #{request_url}",
+                                data: "#{request.options[:method].to_s.upcase} #{request_url}"
       end
 
       def id_from_span(span)
