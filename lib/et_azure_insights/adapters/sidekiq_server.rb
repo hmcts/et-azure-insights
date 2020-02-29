@@ -35,22 +35,29 @@ module EtAzureInsights
           span.open name: request.name, id: generate_span_id do |child_span|
             meta[:span_to_report] = child_span
             configure_telemetry_from_span(request, child_span, client)
-            meta[:start] = Time.now
-            result = yield
-            meta[:duration] = Time.now - meta[:start]
+            result = execute_worker(meta, &block)
             configure_telemetry_from_span(request, span, client)
             result
           end
-
         end
         send_request_telemetry(meta[:span_to_report], request, response, meta[:start], meta[:duration], client)
-        response
-      rescue Exception => e
-        send_exception_telemetry(e, client)
-        raise e
+        return response unless response.is_a?(Exception)
+
+        send_exception_telemetry(response, client)
+        raise response
       end
 
       private
+
+      def execute_worker(meta)
+        meta[:start] = Time.now
+        yield
+      rescue Exception => e
+        e
+      ensure
+        meta[:duration] = Time.now - meta[:start]
+      end
+
 
       attr_accessor :config, :correlation_span, :job_request_adapter
 
@@ -84,13 +91,14 @@ module EtAzureInsights
         configure_telemetry_context!(operation_id: operation_id, operation_parent_id: operation_parent_id, operation_name: request.name, client: client)
       end
 
-      def send_request_telemetry(span, request, response, start, duration, client)
+      def send_request_telemetry(span, request, response_or_ex, start, duration, client)
+        is_exception = response_or_ex.is_a?(Exception)
         span_path = span.path
         request_id = span_path.length > 1 ? "|#{span_path.first}.#{span_path.last}." : "|#{span_path.first}."
         start_time = start.iso8601(7)
         formatted_duration = format_request_duration(duration)
-        status = response ? 200 : 500
-        success = !!response
+        status = is_exception ? 500 : 200
+        success = !is_exception
         options = options_hash(request)
         client.track_request(request_id, start_time, formatted_duration, status.to_s, success, options)
       end

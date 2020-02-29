@@ -23,13 +23,15 @@ RSpec.describe 'Sidekiq integration' do
     end
 
     include_context 'fake sidekiq environment' do
-      r = rack_servers
-      FakeWorker = Class.new do
-        include Sidekiq::Worker
-        sidekiq_options queue: 'my_queue'
+      before do
+        r = rack_servers
+        FakeWorker = Class.new do
+          include Sidekiq::Worker
+          sidekiq_options queue: 'my_queue'
 
-        define_method :perform do
-          r.get_request(:app2, '/from_sidekiq', disable_tracking: false)
+          define_method :perform do
+            r.get_request(:app2, '/from_sidekiq', disable_tracking: false)
+          end
         end
       end
     end
@@ -213,6 +215,64 @@ RSpec.describe 'Sidekiq integration' do
     end
 
 
+
+  end
+
+  context 'rack to sidekiq to http to 2nd rack with failing sidekiq' do
+    include_context 'rack servers' do
+      rack_servers.register(:app1) do |env|
+        FakeWorker.perform_async
+        [200, {}, ['OK from rack app 1 and scheduled call to app 2']]
+      end
+      rack_servers.register(:app2) do |env|
+        [200, {}, ['OK from rack app 2']]
+      end
+    end
+
+    include_context 'fake sidekiq environment' do
+      before do
+        FakeWorker = Class.new do
+          include Sidekiq::Worker
+          sidekiq_options queue: 'my_queue'
+
+          define_method :perform do
+            raise 'Ive Got An Error'
+          end
+        end
+      end
+    end
+
+    it 'informs insights of the sidekiq worker job linked to the dependency' do
+      # Act - Call the app and do the work the sidekiq process would normally do in a seperate thread
+      rack_servers.get_request(:app1, '/path3')
+      Thread.new { FakeWorker.drain rescue nil }.join
+      insights_flush
+
+      first_request = fake_insights_server.request_data.find_by(data: { baseData: {name: 'GET /path3'}})
+      sidekiq_request = first_request.remote_dependencies.find_sidekiq.sidekiq_request
+
+      tags_expectation = a_hash_including 'ai.internal.sdkVersion' => "rb:#{ApplicationInsights::VERSION}",
+                                          'ai.cloud.role' => 'fakerolename',
+                                          'ai.cloud.roleInstance' => 'fakeroleinstance',
+                                          'ai.operation.id' => first_request.dig('tags', 'ai.operation.id')
+      base_data_expectation = a_hash_including 'ver' => 2,
+                                               'id' => match(/\A\|[0-9a-f]{32}\.[0-9a-f]{16}\.\z/),
+                                               'responseCode' => '500',
+                                               'duration' => instance_of(String),
+                                               'success' => false,
+                                               'name' => match(/\APERFORM \/my_queue\/FakeWorker\/[0-9a-f]{24}\z/),
+                                               'url' => match(/\Asidekiq:\/\/my_queue\/FakeWorker\/[0-9a-f]{24}\z/),
+                                               'properties' => a_hash_including('httpMethod' => 'PERFORM')
+
+
+      expected = a_hash_including 'ver' => 1,
+                                  'name' => 'Microsoft.ApplicationInsights.Request',
+                                  'time' => instance_of(String),
+                                  'sampleRate' => 100.0
+      expect(sidekiq_request.to_h).to expected
+      expect(sidekiq_request['tags']).to tags_expectation
+      expect(sidekiq_request.dig('data', 'baseData')).to base_data_expectation
+    end
 
   end
 end
