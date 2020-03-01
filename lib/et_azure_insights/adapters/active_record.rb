@@ -45,10 +45,11 @@ module EtAzureInsights
       end
 
       def send_to_client(span, payload, duration, client: ::EtAzureInsights::Client.client)
+        success = !payload.key?(:exception) || payload[:exception].empty?
         client.track_dependency id_from_span(span),
                                 format_request_duration(duration),
-                                '200',
-                                true,
+                                success ? '200' : '500',
+                                success,
                                 target: target_from(payload),
                                 type: type_from(payload),
                                 name: payload[:sql],
