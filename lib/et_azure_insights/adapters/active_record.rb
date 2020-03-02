@@ -5,7 +5,7 @@ module EtAzureInsights
     # An adapter to hook into and process typhoeus requests / responses and send
     # them on as a dependency to insights
     class ActiveRecord
-      def self.setup(notifications: ::ActiveSupport::Notifications, config: EtAzureInsights.config, request_stack: EtAzureInsights::RequestStack)
+      def self.setup(notifications: ::ActiveSupport::Notifications, config: EtAzureInsights.config)
         @sub = notifications.subscribe('sql.active_record') do |name, start, finish, id, payload|
           duration = finish - start
           instance.call(payload, duration)
