@@ -43,7 +43,7 @@ module EtAzureInsights
         correlate request do |span|
           request['traceparent'] = trace_parent.from_span(span).to_s
           start = Time.now
-          with_disabled_tracing(&block).tap do |response|
+          execute(&block).tap do |response|
             duration = Time.now - start
             send_to_client client, span, request, response, http, duration
           end
@@ -58,22 +58,25 @@ module EtAzureInsights
         !enabled || http.address =~ /dc\.services\.visualstudio\.com/ || request['et-azure-insights-no-track'] == 'true'
       end
 
-      def with_disabled_tracing
+      def execute
         original = enabled
         self.enabled = false
         yield
+      rescue Exception => ex
+        ex
       ensure
         self.enabled = original
       end
 
       def send_to_client(client, span, request, response, http, duration)
         logger.debug("NetHTTP Adapter sending to insights with operation named #{client.context.operation.name}")
-
+        success = !response.is_a?(Exception) && (200..299).include?(response.code.to_i)
+        code = response.is_a?(Exception) ? '500' : response.code
         request_uri = uri(http, request)
         client.track_dependency id_from_span(span),
                                 format_request_duration(duration),
-                                response.code,
-                                (200..299).include?(response.code.to_i),
+                                code,
+                                success,
                                 target: target_for(request_uri), type: 'Http (tracked component)',
                                 name: "#{request.method} #{request_uri}",
                                 data: "#{request.method} #{request_uri}"
