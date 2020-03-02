@@ -18,3 +18,5 @@ Style/Documentation:
     - 'spec/**/*'
 Metrics/LineLength:
   Max: 150
+AllCops:
+  TargetRubyVersion: 2.5.1

@@ -20,7 +20,7 @@ RSpec.describe EtAzureInsights::Adapters::Redis do
 
   describe '#call_pipeline' do
     let(:fake_client) { instance_spy(EtAzureInsights::Client) }
-    subject(:adapter_instance) { described_class.new(client: fake_client) }
+    subject(:adapter_instance) { described_class.new }
     let(:fake_pipeline) { instance_spy 'Redis::Pipeline::Multi', commands: fake_pipeline_commands }
     let(:fake_pipeline_commands) { 
       [
@@ -32,7 +32,7 @@ RSpec.describe EtAzureInsights::Adapters::Redis do
     let(:fake_response) { [false, 1] }
 
     it 'calls the track_dependency method on the telemetry client' do
-      subject.call_pipeline(fake_pipeline, 'redis://dummy.server:6379') do
+      subject.call_pipeline(fake_pipeline, 'redis://dummy.server:6379', client: fake_client) do
         fake_response
       end
       expect(fake_client).to have_received(:track_dependency)
@@ -41,12 +41,12 @@ RSpec.describe EtAzureInsights::Adapters::Redis do
   
   describe '#call' do
     let(:fake_client) { instance_spy(EtAzureInsights::Client) }
-    subject(:adapter_instance) { described_class.new(client: fake_client) }
+    subject(:adapter_instance) { described_class.new }
     let(:fake_command) { [:sadd, 'queues', 'events']  }
     let(:fake_response) { "OK" }
 
     it 'calls the track_dependency method on the telemetry client' do
-      subject.call(fake_command, 'redis://dummy.server:6379') do
+      subject.call(fake_command, 'redis://dummy.server:6379', client: fake_client) do
         fake_response
       end
       expect(fake_client).to have_received(:track_dependency)
@@ -55,11 +55,11 @@ RSpec.describe EtAzureInsights::Adapters::Redis do
 
   describe '#connect' do
     let(:fake_client) { instance_spy(EtAzureInsights::Client) }
-    subject(:adapter_instance) { described_class.new(client: fake_client) }
+    subject(:adapter_instance) { described_class.new }
     let(:fake_response) { instance_spy('Redis::Client') }
 
     it 'calls the track_dependency method on the telemetry client' do
-      subject.connect('redis://dummy.server:6379') do
+      subject.connect('redis://dummy.server:6379', client: fake_client) do
         fake_response
       end
       expect(fake_client).to have_received(:track_dependency)
