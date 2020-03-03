@@ -14,6 +14,9 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    activejob (6.0.2.1)
+      activesupport (= 6.0.2.1)
+      globalid (>= 0.3.6)
     activemodel (6.0.2.1)
       activesupport (= 6.0.2.1)
     activerecord (6.0.2.1)
@@ -40,6 +43,8 @@ GEM
     fakeredis (0.7.0)
       redis (>= 3.2, < 5.0)
     ffi (1.11.2)
+    globalid (0.4.2)
+      activesupport (>= 4.2.0)
     hashdiff (1.0.0)
     i18n (1.8.2)
       concurrent-ruby (~> 1.0)
@@ -107,6 +112,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activejob (~> 6.0, >= 6.0.2.1)
   activerecord (~> 6.0, >= 6.0.2.1)
   activesupport (~> 6.0, >= 6.0.1)
   application_insights!

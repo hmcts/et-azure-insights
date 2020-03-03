@@ -1,6 +1,7 @@
 require 'sidekiq'
 require 'et_azure_insights/config'
 require 'et_azure_insights/request_adapter/sidekiq_job'
+require 'et_azure_insights/request_adapter/active_job_job'
 require 'et_azure_insights/client_helper'
 module EtAzureInsights
   module Adapters
@@ -21,17 +22,19 @@ module EtAzureInsights
       def initialize(config: EtAzureInsights::Config.config,
                      correlation_span: EtAzureInsights::Correlation::Span,
                      trace_parent: EtAzureInsights::TraceParent,
-                     job_request_adapter: EtAzureInsights::RequestAdapter::SidekiqJob)
+                     sidekiq_job_request_adapter: EtAzureInsights::RequestAdapter::SidekiqJob,
+                     activejob_job_request_adapter: EtAzureInsights::RequestAdapter::ActiveJobJob)
         self.correlation_span = correlation_span
         self.trace_parent = trace_parent
-        self.job_request_adapter = job_request_adapter
+        self.sidekiq_job_request_adapter = sidekiq_job_request_adapter
+        self.activejob_job_request_adapter = activejob_job_request_adapter
         self.logger = config.logger
 
 
       end
 
       def call(_worker_class, job, _queue, _redis_pool, client: EtAzureInsights::Client.client)
-        request = job_request_adapter.from_job_hash(job)
+        request = request_adapter_for(job).from_job_hash(job)
         correlate request do |span|
           job['azure_insights_headers'] ||= {}
           job['azure_insights_headers']['traceparent'] = trace_parent.from_span(span).to_s
@@ -45,7 +48,15 @@ module EtAzureInsights
 
       private
 
-      attr_accessor :trace_parent, :correlation_span, :job_request_adapter, :logger
+      attr_accessor :trace_parent, :correlation_span, :sidekiq_job_request_adapter, :activejob_job_request_adapter, :logger
+
+      def request_adapter_for(job)
+        if job['class'] == 'ActiveJob::QueueAdapters::SidekiqAdapter::JobWrapper'
+          activejob_job_request_adapter
+        else
+          sidekiq_job_request_adapter
+        end
+      end
 
       def within_operation_span(&block)
         if correlation_span.current.root?

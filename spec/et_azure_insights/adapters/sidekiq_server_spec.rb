@@ -148,7 +148,7 @@ RSpec.describe EtAzureInsights::Adapters::SidekiqServer do
 
         expect(fake_client_operation).to have_received(:id=).with('|4bf92f3577b34da6a3ce929d0e0e4736.').at_least(:once)
         expect(fake_client_operation).to have_received(:parent_id=).with('|4bf92f3577b34da6a3ce929d0e0e4736.00f067aa0ba902b7.')
-        expect(fake_client_operation).to have_received(:name=).with('PERFORM /events/JobWrapper/63ab2d8dc8f4f714b0b5cdec').at_least(:once)
+        expect(fake_client_operation).to have_received(:name=).with('PERFORM /events/EventJob/63ab2d8dc8f4f714b0b5cdec').at_least(:once)
         expect(fake_client).to have_received(:track_request)
       end
 

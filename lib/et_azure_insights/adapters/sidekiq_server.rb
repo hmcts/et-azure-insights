@@ -4,6 +4,7 @@ require 'et_azure_insights/client'
 require 'et_azure_insights/client_helper'
 require 'et_azure_insights/correlation'
 require 'et_azure_insights/request_adapter/sidekiq_job'
+require 'et_azure_insights/request_adapter/active_job_job'
 module EtAzureInsights
   module Adapters
     class SidekiqServer
@@ -22,14 +23,16 @@ module EtAzureInsights
 
       def initialize(config: EtAzureInsights::Config.config,
                      correlation_span: EtAzureInsights::Correlation::Span,
-                     job_request_adapter: EtAzureInsights::RequestAdapter::SidekiqJob)
+                     sidekiq_job_request_adapter: EtAzureInsights::RequestAdapter::SidekiqJob,
+                     activejob_job_request_adapter: EtAzureInsights::RequestAdapter::ActiveJobJob)
         self.config = config
         self.correlation_span = correlation_span
-        self.job_request_adapter = job_request_adapter
+        self.sidekiq_job_request_adapter = sidekiq_job_request_adapter
+        self.activejob_job_request_adapter = activejob_job_request_adapter
       end
 
       def call(_worker, job_hash, _queue, client: EtAzureInsights::Client.client, &block)
-        request = job_request_adapter.from_job_hash(job_hash)
+        request = request_adapter_for(job_hash).from_job_hash(job_hash)
         meta = {}
         response = with_correlation(request) do |span|
           span.open name: request.name, id: generate_span_id do |child_span|
@@ -59,7 +62,15 @@ module EtAzureInsights
       end
 
 
-      attr_accessor :config, :correlation_span, :job_request_adapter
+      attr_accessor :config, :correlation_span, :sidekiq_job_request_adapter, :activejob_job_request_adapter
+
+      def request_adapter_for(job)
+        if job['class'] == 'ActiveJob::QueueAdapters::SidekiqAdapter::JobWrapper'
+          activejob_job_request_adapter
+        else
+          sidekiq_job_request_adapter
+        end
+      end
 
       def with_correlation(request, &block)
         if request.trace_info?
