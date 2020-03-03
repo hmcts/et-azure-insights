@@ -201,11 +201,11 @@ RSpec.describe 'Typhoeus Integration' do
     include_context 'rack servers' do
       rack_servers.register(:app1) do |env|
         url = rack_servers.base_url_for(:app2)
-        Typhoeus.get(url, connecttimeout: 0.0001)
+        Typhoeus.get(url, connect_timeout: 0.1)
         [200, {}, ['OK from rack app 1 and rack app 2']]
       end
       rack_servers.register(:app2) do |env|
-        sleep 10
+        sleep 0.5
         [200, {}, ['OK from rack app 2 if only it were connected']]
       end
     end
@@ -217,31 +217,27 @@ RSpec.describe 'Typhoeus Integration' do
       expect { insights_call_collector.flatten }.to eventually(include a_hash_including 'data' => a_hash_including('baseData' => a_hash_including('url' => "#{rack_servers.base_url_for(:app1)}/anything"))).pause_for(0.05).within(0.5)
 
       dep_record = insights_call_collector.flatten.detect { |r| r['data']['baseType'] == 'RemoteDependencyData' }
-      original_operation_id = dep_record.dig('tags', 'ai.operation.id')
-      parent_dep_id = dep_record.dig('data', 'baseData', 'id')
-      app2_request = insights_call_collector.flatten.detect { |r| r['data']['baseType'] == 'RequestData' && r['data']['baseData']['url'] == "#{rack_servers.base_url_for(:app2)}/" }
       tags_expectation = a_hash_including 'ai.internal.sdkVersion' => "rb:#{ApplicationInsights::VERSION}",
                                           'ai.cloud.role' => 'fakerolename',
                                           'ai.cloud.roleInstance' => 'fakeroleinstance',
-                                          'ai.operation.parentId' => parent_dep_id,
-                                          'ai.operation.id' => original_operation_id
+                                          'ai.operation.parentId' => instance_of(String),
+                                          'ai.operation.id' => instance_of(String)
       base_data_expectation = a_hash_including 'ver' => 2,
                                                'id' => match(/\A\|[0-9a-f]{32}\.[0-9a-f]{16}\.\z/),
-                                               'responseCode' => '0',
+                                               'resultCode' => '0',
                                                'duration' => instance_of(String),
                                                'success' => false,
-                                               'name' => 'GET /',
-                                               'url' => "#{rack_servers.base_url_for(:app2)}/",
-                                               'properties' => a_hash_including('httpMethod' => 'GET')
+                                               'data' => "GET #{rack_servers.base_url_for(:app2)}/",
+                                               'target' => URI.parse(rack_servers.base_url_for(:app2)).tap { |uri| uri.scheme = nil }.to_s
 
 
       expected = a_hash_including 'ver' => 1,
-                                  'name' => 'Microsoft.ApplicationInsights.Request',
+                                  'name' => 'Microsoft.ApplicationInsights.RemoteDependency',
                                   'time' => instance_of(String),
                                   'sampleRate' => 100.0
-      expect(app2_request).to expected
-      expect(app2_request['tags']).to tags_expectation
-      expect(app2_request.dig('data', 'baseData')).to base_data_expectation
+      expect(dep_record).to expected
+      expect(dep_record['tags']).to tags_expectation
+      expect(dep_record.dig('data', 'baseData')).to base_data_expectation
 
     end
   end
