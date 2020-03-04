@@ -18,6 +18,10 @@ module EtAzureInsights
       configure_instrumentation_key
     end
 
+    def enabled?
+      config.enable
+    end
+
     attr_reader :context
 
     # Send information about the page viewed in the application (a web page for
@@ -33,6 +37,8 @@ module EtAzureInsights
     # @option options [Hash] :measurements the set of custom measurements the
     #   client wants to attach to this data item (defaults to: {})
     def track_page_view(name, url, options = {})
+      return unless enabled?
+
       data_attributes = {
         name: name || 'Null',
         url: url,
@@ -55,7 +61,7 @@ module EtAzureInsights
     # @option options [Hash] :measurements the set of custom measurements the
     #   client wants to attach to this data item (defaults to: {})
     def track_exception(exception, options = {})
-      return unless exception.is_a? Exception
+      return unless exception.is_a?(Exception) && enabled?
 
       parsed_stack = []
       if exception.backtrace
@@ -106,6 +112,8 @@ module EtAzureInsights
     # @option options [Hash] :measurements the set of custom measurements the
     #   client wants to attach to this data item (defaults to: {})
     def track_event(name, options = {})
+      return unless enabled?
+
       data = Channel::Contracts::EventData.new(
         name: name || 'Null',
         properties: options[:properties] || {},
@@ -136,6 +144,8 @@ module EtAzureInsights
     # @option options [Hash] :measurements the set of custom measurements the
     #   client wants to attach to this data item (defaults to: {})
     def track_metric(name, value, options = {})
+      return unless enabled?
+
       data_point = Channel::Contracts::DataPoint.new(
         name: name || 'Null',
         value: value || 0,
@@ -162,6 +172,8 @@ module EtAzureInsights
     # @option options [Hash] :properties the set of custom properties the client
     #   wants attached to this data item. (defaults to: {})
     def track_trace(name, severity_level = nil, options = {})
+      return unless enabled?
+
       data = Channel::Contracts::MessageData.new(
         message: name || 'Null',
         severity_level: severity_level || Channel::Contracts::SeverityLevel::INFORMATION,
@@ -187,6 +199,8 @@ module EtAzureInsights
     # @option options [Hash] :measurements the set of custom measurements the
     #   client wants to attach to this data item (defaults to: {})
     def track_request(id, start_time, duration, response_code, success, options = {})
+      return unless enabled?
+
       data = Channel::Contracts::RequestData.new(
         id: id || 'Null',
         duration: duration || '0:00:00:00.0000000',
@@ -219,6 +233,8 @@ module EtAzureInsights
     # @option options [Hash] :measurements the set of custom measurements the
     #   client wants to attach to this data item (defaults to: {})
     def track_dependency(id, duration, result_code, success, options = {})
+      return unless enabled?
+
       data = Channel::Contracts::RemoteDependencyData.new(
         id: id || 'Null',
         duration: duration || '0:00:00:00.0000000',
@@ -236,6 +252,8 @@ module EtAzureInsights
     end
 
     def flush(wait: false)
+      return unless enabled?
+
       channel.flush
       channel.queue.flush_notification.wait if wait
     end

@@ -29,7 +29,7 @@ module EtAzureInsights
 
   def self.configure(&block)
     EtAzureInsights::Config.configure(&block)
-    FeatureDetector.install_all!
+    FeatureDetector.install_all! if EtAzureInsights.config.enable
   end
 
   def self.client
