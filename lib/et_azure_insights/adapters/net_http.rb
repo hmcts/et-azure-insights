@@ -43,10 +43,12 @@ module EtAzureInsights
         correlate request do |span|
           request['traceparent'] = trace_parent.from_span(span).to_s
           start = Time.now
-          execute(&block).tap do |response|
+          ret = execute(&block).tap do |response|
             duration = Time.now - start
             send_to_client client, span, request, response, http, duration
           end
+          raise ret if ret.is_a?(Exception)
+          ret
         end
       end
 
