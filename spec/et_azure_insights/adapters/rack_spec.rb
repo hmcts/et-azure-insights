@@ -42,6 +42,24 @@ RSpec.describe EtAzureInsights::Adapters::Rack do
       expect(fake_client).to have_received(:track_request).with(anything, anything, anything, '200', anything, anything)
     end
 
+    context 'with string status code' do
+      let(:fake_app_response) { ['200', {}, 'app-body'] }
+      it 'calls track_request with the correct status' do
+        rack.call(fake_request_env, client: fake_client)
+
+        expect(fake_client).to have_received(:track_request).with(anything, anything, anything, '200', anything, anything)
+      end
+    end
+
+    context 'with non numeric string status code' do
+      let(:fake_app_response) { ['wrongvalue', {}, 'app-body'] }
+      it 'calls track_request with zero status' do
+        rack.call(fake_request_env, client: fake_client)
+
+        expect(fake_client).to have_received(:track_request).with(anything, anything, anything, '0', anything, anything)
+      end
+    end
+
     it 'calls track_request with the correct operation id' do
       expect(fake_app).to receive(:call) do |env|
         expect(fake_client_operation).to have_received(:id=).with(match(/\A\|[0-9a-f]{32}\./))

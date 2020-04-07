@@ -68,7 +68,7 @@ module EtAzureInsights
       end
 
       def generate_fake_exception(meta, response)
-        return unless response.first > 499
+        return unless response.first.to_i > 499
 
         meta[:exception] = RuntimeError.new(response.last)
         meta[:raise_exception] = false
@@ -105,7 +105,7 @@ module EtAzureInsights
         request_id = span_path.length > 1 ? "|#{span_path.first}.#{span_path.last}." : "|#{span_path.first}."
         start_time = start.iso8601(7)
         formatted_duration = format_request_duration(duration)
-        status = response.first
+        status = response.first.to_i
         success = status < 400
         options = options_hash(env)
         client.track_request(request_id, start_time, formatted_duration, status.to_s, success, options)
