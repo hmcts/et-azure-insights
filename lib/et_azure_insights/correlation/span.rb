@@ -17,10 +17,11 @@ module EtAzureInsights
         Thread.current[:et_azure_insights_correlation_current_span] = RootSpan.new
       end
 
-      def initialize(name:, parent: nil, id: nil)
+      def initialize(name:, parent: nil, id: nil, logger: EtAzureInsights.logger)
         self.name = name
         self.parent = parent
         self.id = id
+        self.logger = logger
       end
 
       def open(name:, id: nil, &block)
@@ -34,8 +35,9 @@ module EtAzureInsights
       end
 
       def close
-        unless Span.current.equal?(self)
-          raise SpanNotCurrentError, "The span '#{name}' cannot be closed as the current span is '#{Span.current.name}'"
+        until Span.current.equal?(self)
+          logger.warn "The span '#{name}' was stopped from being closed by the span '#{Span.current.name}' - force closing that first"
+          Span.current.close
         end
 
         Thread.current[:et_azure_insights_correlation_current_span] = parent
@@ -57,6 +59,7 @@ module EtAzureInsights
         span.close
       end
 
+      attr_accessor :logger
       attr_writer :name, :parent, :id
     end
   end

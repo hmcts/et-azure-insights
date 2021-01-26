@@ -63,12 +63,6 @@ RSpec.describe EtAzureInsights::Correlation::Span do
   describe '#close' do
     let(:parent_span) { described_class.new(name: 'parent span') }
     subject(:span) { parent_span.open(name: 'child span', id: '4bf92f3577b34da6a3ce929d0e0e4736') }
-    it 'raises an exception if it is not the current span' do
-      span  #Just to open the 2nd span
-      expect { parent_span.close }.to raise_error(EtAzureInsights::Correlation::SpanNotCurrentError, "The span 'parent span' cannot be closed as the current span is 'child span'")
-    ensure
-      EtAzureInsights::Correlation::Span.reset_current
-    end
 
     it 'sets the current span to the parent' do
       span.close
