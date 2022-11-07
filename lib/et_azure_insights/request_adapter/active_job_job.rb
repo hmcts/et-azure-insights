@@ -15,7 +15,11 @@ module EtAzureInsights
       # @param [Hash] job_hash The active job hash
       # @return [EtAzureInsights::RequestAdapter::ActiveJobJob]
       def self.from_job_hash(job_hash, trace_parent: ::EtAzureInsights::TraceParent)
-        new(::Sidekiq::Job.new(job_hash), trace_parent: trace_parent)
+        new(job_record_class.new(job_hash), trace_parent: trace_parent)
+      end
+
+      def self.job_record_class
+        ::Sidekiq.const_defined?('JobRecord') ? ::Sidekiq::JobRecord : ::Sidekiq::Job
       end
 
       def url

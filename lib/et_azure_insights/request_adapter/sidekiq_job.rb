@@ -14,7 +14,11 @@ module EtAzureInsights
       # @param [Hash] job_hash The sidekiq job hash
       # @return [EtAzureInsights::RequestAdapter::SidekiqJob]
       def self.from_job_hash(job_hash, trace_parent: ::EtAzureInsights::TraceParent)
-        new(::Sidekiq::Job.new(job_hash), trace_parent: trace_parent)
+        new(job_record_class.new(job_hash), trace_parent: trace_parent)
+      end
+
+      def self.job_record_class
+        ::Sidekiq.const_defined?('JobRecord') ? ::Sidekiq::JobRecord : ::Sidekiq::Job
       end
 
       # A new instance given a rack request
