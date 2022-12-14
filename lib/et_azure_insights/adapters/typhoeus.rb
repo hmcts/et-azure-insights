@@ -20,10 +20,11 @@ module EtAzureInsights
 
       def self.setup(typhoeus: ::Typhoeus, config: EtAzureInsights.config)
         instance = new(config: config)
-        typhoeus.before do |request|
+        handler = Proc.new do |request|
           instance.call(request)
           true
         end
+        typhoeus.before.unshift handler
         instance
       end
 

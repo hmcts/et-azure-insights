@@ -5,24 +5,20 @@ module EtAzureInsights
     # An adapter to hook into and process typhoeus requests / responses and send
     # them on as a dependency to insights
     class NetHttp
-      def self.setup(net_http: ::Net::HTTP)
-        net_http.class_eval do
-          def request_with_azure_insights_instrumentor(request, *args, &block)
-            ::EtAzureInsights::Adapters::NetHttp.instance.call(request, self) do
-              request_without_azure_insights_instrumentor(request, *args, &block)
-            end
+      module Patch
+        def request(request, *args, &block)
+          ::EtAzureInsights::Adapters::NetHttp.instance.call(request, self) do
+            super(request, *args, &block)
           end
-          alias_method :request_without_azure_insights_instrumentor, :request
-          alias_method :request, :request_with_azure_insights_instrumentor
         end
       end
 
+      def self.setup(net_http: ::Net::HTTP)
+        net_http.send(:prepend, Patch) unless Net::HTTP.ancestors.include?(Patch)
+      end
+
       def self.uninstall(net_http: ::Net::HTTP)
-        net_http.class_eval do
-          alias_method :request, :request_without_azure_insights_instrumentor
-          remove_method :request_without_azure_insights_instrumentor
-          remove_method :request_with_azure_insights_instrumentor
-        end
+
       end
 
       def self.instance
