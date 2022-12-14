@@ -28,24 +28,24 @@ RSpec.describe EtAzureInsights::Adapters::Typhoeus do
       # We dont want to test the work done here, just that it appears to be wired correctly
       # The full test of what happens with the request / response cycle is done in the call method
       fake_instance = instance_spy(described_class)
+      fake_before_array = []
       allow(adapter).to receive(:new).and_return fake_instance
-      allow(fake_typhoeus).to receive(:before) do |&block|
-        block.call(fake_request)
-        expect(fake_instance).to have_received(:call).with(fake_request)
-      end
+      allow(fake_typhoeus).to receive(:before).and_return(fake_before_array)
       adapter.setup(typhoeus: fake_typhoeus)
+      fake_before_array.first.call(fake_request)
+      expect(fake_instance).to have_received(:call).with(fake_request)
     end
 
     it 'the typhoeus before callback must return true to ensure the request is ' do
       # We dont want to test the work done here, just that it appears to be wired correctly
       # The full test of what happens with the request / response cycle is done in the call method
       fake_instance = instance_spy(described_class)
+      fake_before_array = []
       allow(adapter).to receive(:new).and_return fake_instance
-      allow(fake_typhoeus).to receive(:before) do |&block|
-        result = block.call(fake_request)
-        expect(result).to be true
-      end
+      allow(fake_typhoeus).to receive(:before).and_return(fake_before_array)
       adapter.setup(typhoeus: fake_typhoeus)
+      result = fake_before_array.first.call(fake_request)
+      expect(result).to be true
     end
   end
 

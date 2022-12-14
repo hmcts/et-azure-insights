@@ -201,7 +201,7 @@ RSpec.describe 'Typhoeus Integration' do
     include_context 'rack servers' do
       rack_servers.register(:app1) do |env|
         url = rack_servers.base_url_for(:app2)
-        Typhoeus.get(url, connect_timeout: 0.1)
+        Typhoeus.get(url, connecttimeout: 0.1)
         [200, {}, ['OK from rack app 1 and rack app 2']]
       end
       rack_servers.register(:app2) do |env|
@@ -211,6 +211,8 @@ RSpec.describe 'Typhoeus Integration' do
     end
 
     it 'informs insights of the second request linked to the dependency with the correct status' do
+      url = rack_servers.base_url_for(:app2)
+      WebMock.stub_http_request(:get, url).to_timeout
       rack_servers.get_request(:app1, '/anything')
 
       # @TODO This waits for a the request for the first service to be sent (as it wont get sent until the second has responded) - makes the rest easier knowing they are all there.  Needs a better way of doing it
@@ -228,7 +230,7 @@ RSpec.describe 'Typhoeus Integration' do
                                                'duration' => instance_of(String),
                                                'success' => false,
                                                'data' => "GET #{rack_servers.base_url_for(:app2)}/",
-                                               'target' => URI.parse(rack_servers.base_url_for(:app2)).tap { |uri| uri.scheme = nil }.to_s
+                                               'target' => URI.parse(rack_servers.base_url_for(:app2)).yield_self { |uri| "#{uri.host}:#{uri.port}" }
 
 
       expected = a_hash_including 'ver' => 1,
