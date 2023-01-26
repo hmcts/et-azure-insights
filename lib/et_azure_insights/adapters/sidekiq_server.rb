@@ -9,13 +9,13 @@ module EtAzureInsights
   module Adapters
     class SidekiqServer
       include EtAzureInsights::ClientHelper
-      def self.setup(sidekiq_config: ::Sidekiq)
+      def self.setup(sidekiq_config: ::Sidekiq.default_configuration)
         sidekiq_config.server_middleware do |chain|
           chain.add self
         end
       end
 
-      def self.uninstall(sidekiq_config: ::Sidekiq)
+      def self.uninstall(sidekiq_config: ::Sidekiq.default_configuration)
         sidekiq_config.server_middleware do |chain|
           chain.remove self
         end

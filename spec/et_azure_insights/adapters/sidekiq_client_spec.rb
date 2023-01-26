@@ -12,14 +12,14 @@ RSpec.describe EtAzureInsights::Adapters::SidekiqClient do
       allow(::Sidekiq).to receive(:server?).and_return true
       described_class.setup
 
-      expect(::Sidekiq.client_middleware.exists?(described_class)).to be true
+      expect(::Sidekiq.default_configuration.client_middleware.exists?(described_class)).to be true
     end
 
     it 'adds the client middleware if we are a client' do
       allow(::Sidekiq).to receive(:server?).and_return false
       described_class.setup
 
-      expect(::Sidekiq.client_middleware.exists?(described_class)).to be true
+      expect(::Sidekiq.default_configuration.client_middleware.exists?(described_class)).to be true
     end
   end
 

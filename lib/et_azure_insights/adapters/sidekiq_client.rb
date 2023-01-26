@@ -8,13 +8,13 @@ module EtAzureInsights
     class SidekiqClient
       include EtAzureInsights::ClientHelper
       def self.setup
-        ::Sidekiq.client_middleware do |chain|
+        ::Sidekiq.default_configuration.client_middleware do |chain|
           chain.add self
         end
       end
 
       def self.uninstall
-        ::Sidekiq.client_middleware do |chain|
+        ::Sidekiq.default_configuration.client_middleware do |chain|
           chain.remove self
         end
       end
