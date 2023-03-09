@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'activejob', '~> 6.0', '>= 6.0.2.1'
   spec.add_development_dependency 'activesupport', '~> 6.0', '>= 6.0.1'
   spec.add_development_dependency 'activerecord', '~> 6.0', '>= 6.0.2.1'
-  spec.add_development_dependency 'rack', '~> 2.0', '>= 2.0.7'
+  spec.add_development_dependency 'rack', '>= 2.0.7', '~> 3.0'
   spec.add_development_dependency 'random-port', '~> 0.5.1'
   spec.add_development_dependency 'redis', '~> 5.0'
   spec.add_development_dependency 'rspec', '~> 3.9'
