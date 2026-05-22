@@ -69,6 +69,8 @@ module EtAzureInsights
 
         exception.backtrace.each_with_index do |frame, counter|
           match = frame_pattern.match frame
+          next if match.nil?
+
           stack_frame = Channel::Contracts::StackFrame.new(
             assembly: 'Unknown',
             file_name: match['file'],
