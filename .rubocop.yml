@@ -16,7 +16,9 @@ Metrics/BlockLength:
 Style/Documentation:
   Exclude:
     - 'spec/**/*'
-Metrics/LineLength:
+Layout/LineLength:
   Max: 150
 AllCops:
   TargetRubyVersion: 2.5.1
+  NewCops: disable
+  SuggestExtensions: false

@@ -30,7 +30,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'redis', '~> 5.0'
   spec.add_development_dependency 'rspec', '~> 3.9'
   spec.add_development_dependency 'rspec-eventually', '~> 0.2.2'
-  spec.add_development_dependency 'rubocop', '~> 0.76.0'
+  spec.add_development_dependency 'rubocop', '~> 1.0'
   spec.add_development_dependency 'sqlite3', '~> 1.4', '>= 1.4.2'
   spec.add_development_dependency 'sidekiq', '~> 7.0'
   spec.add_development_dependency 'simplecov'
